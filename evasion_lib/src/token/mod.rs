@@ -1,7 +1,7 @@
+use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use lazy_static::lazy_static;
-
+#[derive(Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub litteral: String,
