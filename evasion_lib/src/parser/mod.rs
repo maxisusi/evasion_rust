@@ -3,7 +3,7 @@ mod parser_test;
 use std::collections::VecDeque;
 
 use crate::{
-    ast::{Identifier, LetStatement, Program, Statement},
+    ast::{Identifier, LetStatement, Program, ReturnStatement, Statement},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -56,7 +56,12 @@ impl Parser {
         while self.cur_token.token_type != TokenType::EOF {
             match self.cur_token.token_type {
                 TokenType::LET => {
-                    if let Some(stmt) = self.parse_statment() {
+                    if let Some(stmt) = self.parse_let_statement() {
+                        program.statments.push_front(stmt);
+                    }
+                }
+                TokenType::RETURN => {
+                    if let Some(stmt) = self.parse_return_statement() {
                         program.statments.push_front(stmt);
                     }
                 }
@@ -68,7 +73,22 @@ impl Parser {
         Some(program)
     }
 
-    fn parse_statment(&mut self) -> Option<Box<dyn Statement>> {
+    fn parse_return_statement(&mut self) -> Option<Box<dyn Statement>> {
+        let stmt_tok = self.cur_token.clone();
+
+        // TODO: Skipping expression until we encounter
+        // a semicolon
+
+        while !self.cur_tok_is(TokenType::SEMICOLON) {
+            self.next_token();
+        }
+
+        let stmt = ReturnStatement { token: stmt_tok };
+
+        Some(Box::new(stmt))
+    }
+
+    fn parse_let_statement(&mut self) -> Option<Box<dyn Statement>> {
         let stmt_tok = self.cur_token.clone();
 
         if !self.expect_peek(TokenType::IDENT) {
