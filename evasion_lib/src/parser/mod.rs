@@ -12,6 +12,7 @@ struct Parser {
     lexer: Lexer,
     cur_token: Token,
     peek_token: Token,
+    errors: Vec<String>,
 }
 
 impl Parser {
@@ -20,6 +21,7 @@ impl Parser {
             lexer,
             cur_token: Token::new(TokenType::ILLEGLAL, ""),
             peek_token: Token::new(TokenType::ILLEGLAL, ""),
+            errors: vec![],
         };
 
         // Read twice so cur_token and peek_token are both set
@@ -27,6 +29,18 @@ impl Parser {
         p.next_token();
 
         return Box::new(p);
+    }
+
+    fn errors(&self) -> &Vec<String> {
+        &self.errors
+    }
+
+    fn peek_error(&mut self, tok: TokenType) {
+        let msg = format!(
+            "expected next token to be {:?}, got {:?} instead",
+            tok, self.peek_token.token_type
+        );
+        self.errors.push(msg);
     }
 
     fn next_token(&mut self) {
@@ -40,10 +54,15 @@ impl Parser {
         };
 
         while self.cur_token.token_type != TokenType::EOF {
-            if let Some(stmt) = self.parse_statment() {
-                program.statments.push_front(stmt);
-                self.next_token();
+            match self.cur_token.token_type {
+                TokenType::LET => {
+                    if let Some(stmt) = self.parse_statment() {
+                        program.statments.push_front(stmt);
+                    }
+                }
+                _ => {}
             }
+            self.next_token();
         }
 
         Some(program)
@@ -60,6 +79,10 @@ impl Parser {
             value: self.cur_token.litteral.clone(),
             token: self.cur_token.clone(),
         };
+
+        if !self.expect_peek(TokenType::ASSIGN) {
+            return None;
+        }
 
         // TODO: Skipping expression until we encounter
         // a semicolon
@@ -90,6 +113,7 @@ impl Parser {
             self.next_token();
             return true;
         } else {
+            self.peek_error(tok);
             return false;
         }
     }
