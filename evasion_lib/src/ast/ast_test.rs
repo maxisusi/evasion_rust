@@ -5,7 +5,7 @@ mod tests {
     use std::collections::VecDeque;
 
     use crate::{
-        ast::{Expressions, Identifier, LetStatement, Programs, Statements},
+        ast::{Expressions, Programs, Statements},
         token::{Token, TokenType},
     };
 

@@ -5,7 +5,7 @@ mod tests {
     use std::any::Any;
 
     use crate::{
-        ast::{LetStatement, Node, ReturnStatement, Statement, Statements},
+        ast::{Node, Statements},
         lexer::Lexer,
         parser::Parser,
     };
@@ -35,7 +35,7 @@ mod tests {
             }
 
             let expected_identifier = ["x", "y", "foobar"];
-            for identif in expected_identifier.into_iter() {
+            for identif in expected_identifier {
                 let stmt = program.statments.pop_back().unwrap();
 
                 h_test_let_statments(stmt, identif);
@@ -44,7 +44,6 @@ mod tests {
             panic!("parse_program() return null")
         }
     }
-    // TODO: Fix it  https://bennett.dev/dont-use-boxed-trait-objects-for-struct-internals/
     fn h_test_let_statments(stmt: Statements, ident: &str) {
         match &stmt {
             Statements::LetStatement { name, .. } => {
@@ -62,8 +61,10 @@ mod tests {
                         ident, name
                     );
                 }
+
+                //TODO: Check the expression as well (value)
             }
-            _ => panic!("Expected a Let statement but got something else"),
+            _ => panic!("Expected a Let statement but got={}", stmt),
         }
     }
 
@@ -107,20 +108,20 @@ mod tests {
             }
 
             let expected_identifier = ["x", "y", "foobar"];
-            for identif in expected_identifier.into_iter() {
+            for _ in expected_identifier {
                 let stmt = program.statments.pop_back().unwrap();
-
                 match &stmt {
-                    Statements::ReturnStatement { token, .. } => {
+                    Statements::ReturnStatement { .. } => {
                         if stmt.token_litteral() != "return" {
                             panic!(
                                 "token_litteral() not 'return', got={}",
                                 stmt.token_litteral()
                             );
                         }
+                        // TODO: Check the expression as well
                     }
                     _ => {
-                        panic!("Expected ReturnStatement, got something else")
+                        panic!("Expected ReturnStatement, got={}", stmt)
                     }
                 }
             }
