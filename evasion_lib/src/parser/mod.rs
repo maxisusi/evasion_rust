@@ -114,7 +114,10 @@ impl Parser {
         let stmt = LetStatement {
             token: stmt_tok.clone(),
             name: Box::new(identifier),
-            // value: Box::new(), <- Will be added once the expression is being parsed
+            value: Box::new(Identifier {
+                token: Token::new(TokenType::IDENT, "DUMMY"),
+                value: "DUMMY".to_string(),
+            }),
         };
 
         Some(Box::new(stmt))
