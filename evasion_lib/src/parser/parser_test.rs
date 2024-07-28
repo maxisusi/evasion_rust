@@ -2,7 +2,6 @@
 
 mod tests {
     use core::panic;
-    use std::any::Any;
 
     use crate::{
         ast::{Node, Statements},
@@ -26,7 +25,7 @@ mod tests {
         let program = parser.parse_program();
         check_parser_errors(&mut parser);
 
-        if let Some(mut program) = program {
+        if let Some(program) = program {
             if program.statments.len() != 3 {
                 panic!(
                     "program.statments doesn't contain 3 statments, got={}",
@@ -35,16 +34,21 @@ mod tests {
             }
 
             let expected_identifier = ["x", "y", "foobar"];
-            for identif in expected_identifier {
-                let stmt = program.statments.pop_back().unwrap();
 
-                h_test_let_statments(stmt, identif);
+            let mut program_iter = program.statments.iter();
+
+            for identif in expected_identifier {
+                if let Some(stmt) = program_iter.next() {
+                    h_test_let_statments(stmt, identif);
+                } else {
+                    break;
+                }
             }
         } else {
             panic!("parse_program() return null")
         }
     }
-    fn h_test_let_statments(stmt: Statements, ident: &str) {
+    fn h_test_let_statments(stmt: &Statements, ident: &str) {
         match &stmt {
             Statements::Let { name, .. } => {
                 if stmt.token_litteral() != "let" {
@@ -99,7 +103,7 @@ mod tests {
         let program = parser.parse_program();
         check_parser_errors(&mut parser);
 
-        if let Some(mut program) = program {
+        if let Some(program) = program {
             if program.statments.len() != 3 {
                 panic!(
                     "program.statments doesn't contain 3 statments, got={}",
@@ -108,21 +112,27 @@ mod tests {
             }
 
             let expected_identifier = ["x", "y", "foobar"];
+
+            let mut program_iter = program.statments.iter();
+
             for _ in expected_identifier {
-                let stmt = program.statments.pop_back().unwrap();
-                match &stmt {
-                    Statements::Return { .. } => {
-                        if stmt.token_litteral() != "return" {
-                            panic!(
-                                "token_litteral() not 'return', got={}",
-                                stmt.token_litteral()
-                            );
+                if let Some(stmt) = program_iter.next() {
+                    match &stmt {
+                        Statements::Return { .. } => {
+                            if stmt.token_litteral() != "return" {
+                                panic!(
+                                    "token_litteral() not 'return', got={}",
+                                    stmt.token_litteral()
+                                );
+                            }
+                            // TODO: Check the expression as well
                         }
-                        // TODO: Check the expression as well
+                        _ => {
+                            panic!("Expected ReturnStatement, got={}", stmt)
+                        }
                     }
-                    _ => {
-                        panic!("Expected ReturnStatement, got={}", stmt)
-                    }
+                } else {
+                    break;
                 }
             }
         } else {

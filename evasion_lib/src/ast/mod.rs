@@ -1,7 +1,7 @@
 mod ast_test;
 use crate::token::Token;
 
-use std::{collections::VecDeque, fmt::Display};
+use std::fmt::Display;
 
 // ------------------------
 // * TRAITS
@@ -16,7 +16,7 @@ pub trait Node: Display {
 // ------------------------
 
 pub struct Program {
-    pub statments: VecDeque<Statements>,
+    pub statments: Vec<Statements>,
 }
 
 impl Program {

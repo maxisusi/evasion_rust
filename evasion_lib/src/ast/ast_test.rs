@@ -2,7 +2,6 @@
 
 mod tests {
     use core::panic;
-    use std::collections::VecDeque;
 
     use crate::{
         ast::{Expressions, Program, Statements},
@@ -11,7 +10,7 @@ mod tests {
 
     #[test]
     fn test_display_ast() {
-        let statments = VecDeque::from([Statements::Let {
+        let statments = Vec::from([Statements::Let {
             token: Token::new(TokenTypes::LET, "let"),
             name: Expressions::Identifier {
                 token: Token::new(TokenTypes::IDENT, "myVar"),

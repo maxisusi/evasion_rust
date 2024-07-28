@@ -1,5 +1,4 @@
 mod parser_test;
-use std::collections::VecDeque;
 
 use crate::{
     ast::{Expressions, Program, Statements},
@@ -49,19 +48,19 @@ impl Parser {
 
     fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program {
-            statments: VecDeque::new(),
+            statments: Vec::new(),
         };
 
         while self.cur_token.token_type != TokenTypes::EOF {
             match self.cur_token.token_type {
                 TokenTypes::LET => {
                     if let Some(stmt) = self.parse_let_statement() {
-                        program.statments.push_front(stmt);
+                        program.statments.push(stmt);
                     }
                 }
                 TokenTypes::RETURN => {
                     if let Some(stmt) = self.parse_return_statement() {
-                        program.statments.push_front(stmt);
+                        program.statments.push(stmt);
                     }
                 }
                 _ => {}
