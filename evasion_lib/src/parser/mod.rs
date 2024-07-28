@@ -1,9 +1,8 @@
-#[allow(unused)]
 mod parser_test;
 use std::collections::VecDeque;
 
 use crate::{
-    ast::{Identifier, LetStatement, Program, ReturnStatement, Statement},
+    ast::{Expressions, Programs, Statements},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -48,8 +47,8 @@ impl Parser {
         self.peek_token = self.lexer.next_token();
     }
 
-    fn parse_program(&mut self) -> Option<Program> {
-        let mut program = Program {
+    fn parse_program(&mut self) -> Option<Programs> {
+        let mut program = Programs {
             statments: VecDeque::new(),
         };
 
@@ -73,7 +72,7 @@ impl Parser {
         Some(program)
     }
 
-    fn parse_return_statement(&mut self) -> Option<Box<dyn Statement>> {
+    fn parse_return_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
 
         // TODO: Skipping expression until we encounter
@@ -83,19 +82,26 @@ impl Parser {
             self.next_token();
         }
 
-        let stmt = ReturnStatement { token: stmt_tok };
+        let stmt = Statements::ReturnStatement {
+            token: stmt_tok,
+            value: Expressions::Identifier {
+                // Dummy value for now
+                token: Token::new(TokenType::ILLEGLAL, ""),
+                value: "".to_string(),
+            },
+        };
 
-        Some(Box::new(stmt))
+        Some(stmt)
     }
 
-    fn parse_let_statement(&mut self) -> Option<Box<dyn Statement>> {
+    fn parse_let_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
 
         if !self.expect_peek(TokenType::IDENT) {
             return None;
         }
 
-        let identifier = Identifier {
+        let identifier = Expressions::Identifier {
             value: self.cur_token.litteral.clone(),
             token: self.cur_token.clone(),
         };
@@ -111,16 +117,17 @@ impl Parser {
             self.next_token();
         }
 
-        let stmt = LetStatement {
+        let stmt = Statements::LetStatement {
             token: stmt_tok.clone(),
-            name: Box::new(identifier),
-            value: Box::new(Identifier {
-                token: Token::new(TokenType::IDENT, "DUMMY"),
-                value: "DUMMY".to_string(),
-            }),
+            name: identifier,
+            value: Expressions::Identifier {
+                // Dummy value for now.
+                token: Token::new(TokenType::ILLEGLAL, ""),
+                value: "".to_string(),
+            },
         };
 
-        Some(Box::new(stmt))
+        Some(stmt)
     }
 
     fn cur_tok_is(&self, tok: TokenType) -> bool {
