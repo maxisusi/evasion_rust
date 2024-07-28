@@ -52,11 +52,70 @@ impl Display for Program {
     }
 }
 
+pub struct Programs {
+    pub statments: VecDeque<Statements>,
+}
+
+impl Programs {
+    fn token_litteral(&self) -> &str {
+        if self.statments.len() > 0 {
+            return self.statments[0].token_litteral();
+        } else {
+            ""
+        }
+    }
+}
+
+impl Display for Programs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for stmt in self.statments.iter() {
+            write!(f, "{}", stmt).unwrap()
+        }
+        return write!(f, "");
+    }
+}
+
 // ------------------------
 // * STATEMENTS
 // ------------------------
 
 // RETURN STATEMENT
+//
+
+pub enum Statements {
+    ReturnStatement {
+        token: Token,
+    },
+    LetStatement {
+        token: Token,
+        name: Box<Identifier>,
+        value: Box<dyn Expression>,
+    },
+}
+
+impl Node for Statements {
+    fn token_litteral(&self) -> &str {
+        match self {
+            Statements::ReturnStatement { token } => &token.litteral,
+            Statements::LetStatement { token, .. } => &token.litteral,
+        }
+    }
+}
+
+impl Display for Statements {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Statements::ReturnStatement { token } => write!(f, "{}", token.litteral),
+            Statements::LetStatement { token, name, value } => write!(
+                f,
+                "{} {} = {};",
+                token.litteral,
+                name.token.litteral,
+                value.token_litteral()
+            ),
+        }
+    }
+}
 
 pub struct ReturnStatement {
     pub token: Token,
@@ -123,6 +182,35 @@ impl Statement for LetStatement {
 // ------------------------
 // * EXPRESSIONS
 // ------------------------
+
+enum Expressions {
+    ExpressionStatement {
+        token: Token,
+        expression: Box<dyn Expression>,
+    },
+    Identifier {
+        token: Token,
+        value: String,
+    },
+}
+
+impl Node for Expressions {
+    fn token_litteral(&self) -> &str {
+        match self {
+            Expressions::ExpressionStatement { token, .. } => &token.litteral,
+            Expressions::Identifier { token, .. } => &token.litteral,
+        }
+    }
+}
+
+impl Display for Expressions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expressions::ExpressionStatement { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral,),
+        }
+    }
+}
 
 pub struct ExpressionStatement {
     pub token: Token,
