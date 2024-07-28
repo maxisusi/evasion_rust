@@ -5,7 +5,7 @@ mod tests {
     use std::any::Any;
 
     use crate::{
-        ast::{LetStatement, Node, ReturnStatement, Statement},
+        ast::{LetStatement, Node, ReturnStatement, Statement, Statements},
         lexer::Lexer,
         parser::Parser,
     };
@@ -45,27 +45,25 @@ mod tests {
         }
     }
     // TODO: Fix it  https://bennett.dev/dont-use-boxed-trait-objects-for-struct-internals/
-    fn h_test_let_statments(stmt: Box<dyn Statement>, ident: &str) {
-        match stmt.as_ref().as_any().downcast_ref::<LetStatement>() {
-            Some(stmt) => {
+    fn h_test_let_statments(stmt: Statements, ident: &str) {
+        match &stmt {
+            Statements::LetStatement { name, .. } => {
                 if stmt.token_litteral() != "let" {
                     panic!("token_litteral() not 'let', got={}", stmt.token_litteral());
                 }
 
-                if stmt.name.value.as_str() != ident {
-                    panic!("Identifier.value is not={} got={}", ident, stmt.name.value);
+                if name.value != ident {
+                    panic!("Identifier.value is not={} got={}", ident, name.value);
                 }
 
-                if stmt.name.token_litteral() != ident {
+                if name.token_litteral() != ident {
                     panic!(
                         "Identifier.name.token_litteral() is not={} got={}",
-                        ident, stmt.name.value
+                        ident, name.value
                     );
                 }
             }
-            None => {
-                panic!("Expected LetStatement, got={:?}", stmt.type_id())
-            }
+            _ => panic!("Expected a Let statement but got something else"),
         }
     }
 
@@ -112,8 +110,8 @@ mod tests {
             for identif in expected_identifier.into_iter() {
                 let stmt = program.statments.pop_back().unwrap();
 
-                match stmt.as_ref().as_any().downcast_ref::<ReturnStatement>() {
-                    Some(stmt) => {
+                match &stmt {
+                    Statements::ReturnStatement { token, .. } => {
                         if stmt.token_litteral() != "return" {
                             panic!(
                                 "token_litteral() not 'return', got={}",
@@ -121,8 +119,8 @@ mod tests {
                             );
                         }
                     }
-                    None => {
-                        panic!("Expected ReturnStatement, got={:?}", stmt.type_id())
+                    _ => {
+                        panic!("Expected ReturnStatement, got something else")
                     }
                 }
             }
