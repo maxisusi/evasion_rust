@@ -2,11 +2,7 @@
 mod ast_test;
 use crate::token::Token;
 
-use std::{
-    any::Any,
-    collections::VecDeque,
-    fmt::{write, Display},
-};
+use std::{any::Any, collections::VecDeque, fmt::Display};
 
 // ------------------------
 // * TYPE DEFINITIONS
@@ -88,8 +84,8 @@ pub enum Statements {
     },
     LetStatement {
         token: Token,
-        name: Box<Identifier>,
-        value: Box<dyn Expression>,
+        name: Expressions,
+        value: Expressions,
     },
 }
 
@@ -110,7 +106,7 @@ impl Display for Statements {
                 f,
                 "{} {} = {};",
                 token.litteral,
-                name.token.litteral,
+                name,
                 value.token_litteral()
             ),
         }
@@ -183,10 +179,10 @@ impl Statement for LetStatement {
 // * EXPRESSIONS
 // ------------------------
 
-enum Expressions {
+pub enum Expressions {
     ExpressionStatement {
         token: Token,
-        expression: Box<dyn Expression>,
+        expression: Box<Expressions>,
     },
     Identifier {
         token: Token,

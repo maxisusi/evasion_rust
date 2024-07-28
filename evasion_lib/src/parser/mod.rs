@@ -3,7 +3,7 @@ mod parser_test;
 use std::collections::VecDeque;
 
 use crate::{
-    ast::{Identifier, Programs, Statements},
+    ast::{Expression, ExpressionStatement, Expressions, Identifier, Programs, Statements},
     lexer::Lexer,
     token::{Token, TokenType},
 };
@@ -95,7 +95,7 @@ impl Parser {
             return None;
         }
 
-        let identifier = Identifier {
+        let identifier = Expressions::Identifier {
             value: self.cur_token.litteral.clone(),
             token: self.cur_token.clone(),
         };
@@ -113,11 +113,11 @@ impl Parser {
 
         let stmt = Statements::LetStatement {
             token: stmt_tok.clone(),
-            name: Box::new(identifier),
-            value: Box::new(Identifier {
+            name: identifier,
+            value: Expressions::Identifier {
                 token: Token::new(TokenType::IDENT, "DUMMY"),
                 value: "DUMMY".to_string(),
-            }),
+            },
         };
 
         Some(stmt)

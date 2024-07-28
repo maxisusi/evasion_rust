@@ -52,14 +52,14 @@ mod tests {
                     panic!("token_litteral() not 'let', got={}", stmt.token_litteral());
                 }
 
-                if name.value != ident {
-                    panic!("Identifier.value is not={} got={}", ident, name.value);
+                if name.to_string() != ident {
+                    panic!("Identifier.value is not={} got={}", ident, name);
                 }
 
                 if name.token_litteral() != ident {
                     panic!(
                         "Identifier.name.token_litteral() is not={} got={}",
-                        ident, name.value
+                        ident, name
                     );
                 }
             }
