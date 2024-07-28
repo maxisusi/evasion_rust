@@ -1,6 +1,6 @@
 #[allow(unused)]
 mod lexer_test;
-use super::token::{Token, TokenType, KEYWORDS};
+use super::token::{Token, TokenTypes, KEYWORDS};
 
 pub struct Lexer {
     input: Vec<char>,
@@ -43,34 +43,34 @@ impl Lexer {
                     let tok_lit = self.ch;
                     self.read_char();
                     let litteral = format!("{}{}", tok_lit, self.ch); // litteral is: ==
-                    Token::new(TokenType::EQ, litteral)
+                    Token::new(TokenTypes::EQ, litteral)
                 } else {
-                    Token::new(TokenType::ASSIGN, "=")
+                    Token::new(TokenTypes::ASSIGN, "=")
                 }
             }
-            '+' => Token::new(TokenType::PLUS, "+"),
-            '(' => Token::new(TokenType::LPAREN, "("),
-            ')' => Token::new(TokenType::RPAREN, ")"),
-            '{' => Token::new(TokenType::LBRACE, "{"),
-            '}' => Token::new(TokenType::RBRACE, "}"),
-            ',' => Token::new(TokenType::COMMA, ","),
-            ';' => Token::new(TokenType::SEMICOLON, ";"),
+            '+' => Token::new(TokenTypes::PLUS, "+"),
+            '(' => Token::new(TokenTypes::LPAREN, "("),
+            ')' => Token::new(TokenTypes::RPAREN, ")"),
+            '{' => Token::new(TokenTypes::LBRACE, "{"),
+            '}' => Token::new(TokenTypes::RBRACE, "}"),
+            ',' => Token::new(TokenTypes::COMMA, ","),
+            ';' => Token::new(TokenTypes::SEMICOLON, ";"),
             '!' => {
                 if self.peek() == '=' {
                     let tok_lit = self.ch;
                     self.read_char();
                     let litteral = format!("{}{}", tok_lit, self.ch); // litteral is: !=
-                    Token::new(TokenType::NOTEq, litteral)
+                    Token::new(TokenTypes::NOTEq, litteral)
                 } else {
-                    Token::new(TokenType::BANG, "!")
+                    Token::new(TokenTypes::BANG, "!")
                 }
             }
-            '-' => Token::new(TokenType::MINUS, "-"),
-            '/' => Token::new(TokenType::SLASH, "/"),
-            '*' => Token::new(TokenType::ASTERISK, "*"),
-            '<' => Token::new(TokenType::LT, "<"),
-            '>' => Token::new(TokenType::GT, ">"),
-            '\0' => Token::new(TokenType::EOF, ""),
+            '-' => Token::new(TokenTypes::MINUS, "-"),
+            '/' => Token::new(TokenTypes::SLASH, "/"),
+            '*' => Token::new(TokenTypes::ASTERISK, "*"),
+            '<' => Token::new(TokenTypes::LT, "<"),
+            '>' => Token::new(TokenTypes::GT, ">"),
+            '\0' => Token::new(TokenTypes::EOF, ""),
             c => {
                 if self.is_letter(c) {
                     let identifier = self.read_identifier();
@@ -79,16 +79,16 @@ impl Lexer {
                     if let Some(token_type) = KEYWORDS.get(identifier.as_str()).clone() {
                         return Token::new(*token_type, identifier);
                     } else {
-                        return Token::new(TokenType::IDENT, identifier);
+                        return Token::new(TokenTypes::IDENT, identifier);
                     }
                 }
 
                 if self.is_number(c) {
                     let number = self.read_number().iter().collect::<String>();
-                    return Token::new(TokenType::INT, number);
+                    return Token::new(TokenTypes::INT, number);
                 }
                 // Check number
-                return Token::new(TokenType::ILLEGLAL, c);
+                return Token::new(TokenTypes::ILLEGLAL, c);
             }
         };
         self.read_char();

@@ -3,12 +3,12 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Token {
-    pub token_type: TokenType,
+    pub token_type: TokenTypes,
     pub litteral: String,
 }
 
 impl Token {
-    pub fn new<T>(token_type: TokenType, litteral: T) -> Token
+    pub fn new<T>(token_type: TokenTypes, litteral: T) -> Token
     where
         T: Into<String>,
     {
@@ -20,7 +20,7 @@ impl Token {
 }
 
 #[derive(PartialEq, Debug, Clone, Copy)]
-pub enum TokenType {
+pub enum TokenTypes {
     ILLEGLAL,
     EOF,
 
@@ -58,13 +58,13 @@ pub enum TokenType {
 }
 
 lazy_static! {
-    pub static ref KEYWORDS: HashMap<&'static str, TokenType> = HashMap::from([
-        ("let", TokenType::LET),
-        ("fn", TokenType::FUNCTION),
-        ("return", TokenType::RETURN),
-        ("if", TokenType::IF),
-        ("else", TokenType::ELSE),
-        ("true", TokenType::TRUE),
-        ("false", TokenType::FALSE)
+    pub static ref KEYWORDS: HashMap<&'static str, TokenTypes> = HashMap::from([
+        ("let", TokenTypes::LET),
+        ("fn", TokenTypes::FUNCTION),
+        ("return", TokenTypes::RETURN),
+        ("if", TokenTypes::IF),
+        ("else", TokenTypes::ELSE),
+        ("true", TokenTypes::TRUE),
+        ("false", TokenTypes::FALSE)
     ]);
 }

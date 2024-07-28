@@ -2,9 +2,9 @@ mod parser_test;
 use std::collections::VecDeque;
 
 use crate::{
-    ast::{Expressions, Programs, Statements},
+    ast::{Expressions, Program, Statements},
     lexer::Lexer,
-    token::{Token, TokenType},
+    token::{Token, TokenTypes},
 };
 
 struct Parser {
@@ -18,8 +18,8 @@ impl Parser {
     fn new(lexer: Lexer) -> Box<Parser> {
         let mut p = Parser {
             lexer,
-            cur_token: Token::new(TokenType::ILLEGLAL, ""),
-            peek_token: Token::new(TokenType::ILLEGLAL, ""),
+            cur_token: Token::new(TokenTypes::ILLEGLAL, ""),
+            peek_token: Token::new(TokenTypes::ILLEGLAL, ""),
             errors: vec![],
         };
 
@@ -34,7 +34,7 @@ impl Parser {
         &self.errors
     }
 
-    fn peek_error(&mut self, tok: TokenType) {
+    fn peek_error(&mut self, tok: TokenTypes) {
         let msg = format!(
             "expected next token to be {:?}, got {:?} instead",
             tok, self.peek_token.token_type
@@ -47,19 +47,19 @@ impl Parser {
         self.peek_token = self.lexer.next_token();
     }
 
-    fn parse_program(&mut self) -> Option<Programs> {
-        let mut program = Programs {
+    fn parse_program(&mut self) -> Option<Program> {
+        let mut program = Program {
             statments: VecDeque::new(),
         };
 
-        while self.cur_token.token_type != TokenType::EOF {
+        while self.cur_token.token_type != TokenTypes::EOF {
             match self.cur_token.token_type {
-                TokenType::LET => {
+                TokenTypes::LET => {
                     if let Some(stmt) = self.parse_let_statement() {
                         program.statments.push_front(stmt);
                     }
                 }
-                TokenType::RETURN => {
+                TokenTypes::RETURN => {
                     if let Some(stmt) = self.parse_return_statement() {
                         program.statments.push_front(stmt);
                     }
@@ -78,15 +78,15 @@ impl Parser {
         // TODO: Skipping expression until we encounter
         // a semicolon
 
-        while !self.cur_tok_is(TokenType::SEMICOLON) {
+        while !self.cur_tok_is(TokenTypes::SEMICOLON) {
             self.next_token();
         }
 
-        let stmt = Statements::ReturnStatement {
+        let stmt = Statements::Return {
             token: stmt_tok,
             value: Expressions::Identifier {
                 // Dummy value for now
-                token: Token::new(TokenType::ILLEGLAL, ""),
+                token: Token::new(TokenTypes::ILLEGLAL, ""),
                 value: "".to_string(),
             },
         };
@@ -97,7 +97,7 @@ impl Parser {
     fn parse_let_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
 
-        if !self.expect_peek(TokenType::IDENT) {
+        if !self.expect_peek(TokenTypes::IDENT) {
             return None;
         }
 
@@ -106,23 +106,23 @@ impl Parser {
             token: self.cur_token.clone(),
         };
 
-        if !self.expect_peek(TokenType::ASSIGN) {
+        if !self.expect_peek(TokenTypes::ASSIGN) {
             return None;
         }
 
         // TODO: Skipping expression until we encounter
         // a semicolon
 
-        while !self.cur_tok_is(TokenType::SEMICOLON) {
+        while !self.cur_tok_is(TokenTypes::SEMICOLON) {
             self.next_token();
         }
 
-        let stmt = Statements::LetStatement {
+        let stmt = Statements::Let {
             token: stmt_tok.clone(),
             name: identifier,
             value: Expressions::Identifier {
                 // Dummy value for now.
-                token: Token::new(TokenType::ILLEGLAL, ""),
+                token: Token::new(TokenTypes::ILLEGLAL, ""),
                 value: "".to_string(),
             },
         };
@@ -130,15 +130,15 @@ impl Parser {
         Some(stmt)
     }
 
-    fn cur_tok_is(&self, tok: TokenType) -> bool {
+    fn cur_tok_is(&self, tok: TokenTypes) -> bool {
         self.cur_token.token_type == tok
     }
 
-    fn peek_token_is(&self, tok: TokenType) -> bool {
+    fn peek_token_is(&self, tok: TokenTypes) -> bool {
         self.peek_token.token_type == tok
     }
 
-    fn expect_peek(&mut self, tok: TokenType) -> bool {
+    fn expect_peek(&mut self, tok: TokenTypes) -> bool {
         if self.peek_token_is(tok) {
             self.next_token();
             return true;

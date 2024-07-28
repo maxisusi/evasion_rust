@@ -46,7 +46,7 @@ mod tests {
     }
     fn h_test_let_statments(stmt: Statements, ident: &str) {
         match &stmt {
-            Statements::LetStatement { name, .. } => {
+            Statements::Let { name, .. } => {
                 if stmt.token_litteral() != "let" {
                     panic!("token_litteral() not 'let', got={}", stmt.token_litteral());
                 }
@@ -111,7 +111,7 @@ mod tests {
             for _ in expected_identifier {
                 let stmt = program.statments.pop_back().unwrap();
                 match &stmt {
-                    Statements::ReturnStatement { .. } => {
+                    Statements::Return { .. } => {
                         if stmt.token_litteral() != "return" {
                             panic!(
                                 "token_litteral() not 'return', got={}",

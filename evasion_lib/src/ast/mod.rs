@@ -15,11 +15,11 @@ pub trait Node: Display {
 // * PROGRAM
 // ------------------------
 
-pub struct Programs {
+pub struct Program {
     pub statments: VecDeque<Statements>,
 }
 
-impl Programs {
+impl Program {
     fn token_litteral(&self) -> &str {
         if self.statments.len() > 0 {
             return self.statments[0].token_litteral();
@@ -29,7 +29,7 @@ impl Programs {
     }
 }
 
-impl Display for Programs {
+impl Display for Program {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for stmt in self.statments.iter() {
             write!(f, "{}", stmt).unwrap()
@@ -43,11 +43,11 @@ impl Display for Programs {
 // ------------------------
 
 pub enum Statements {
-    ReturnStatement {
+    Return {
         token: Token,
         value: Expressions,
     },
-    LetStatement {
+    Let {
         token: Token,
         name: Expressions,
         value: Expressions,
@@ -57,8 +57,8 @@ pub enum Statements {
 impl Node for Statements {
     fn token_litteral(&self) -> &str {
         match self {
-            Statements::ReturnStatement { token, .. } => &token.litteral,
-            Statements::LetStatement { token, .. } => &token.litteral,
+            Statements::Return { token, .. } => &token.litteral,
+            Statements::Let { token, .. } => &token.litteral,
         }
     }
 }
@@ -66,8 +66,8 @@ impl Node for Statements {
 impl Display for Statements {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Statements::ReturnStatement { token, .. } => write!(f, "{}", token.litteral),
-            Statements::LetStatement { token, name, value } => write!(
+            Statements::Return { token, .. } => write!(f, "{}", token.litteral),
+            Statements::Let { token, name, value } => write!(
                 f,
                 "{} {} = {};",
                 token.litteral,
@@ -83,7 +83,7 @@ impl Display for Statements {
 // ------------------------
 
 pub enum Expressions {
-    ExpressionStatement {
+    Expression {
         token: Token,
         expression: Box<Expressions>,
     },
@@ -96,7 +96,7 @@ pub enum Expressions {
 impl Node for Expressions {
     fn token_litteral(&self) -> &str {
         match self {
-            Expressions::ExpressionStatement { token, .. } => &token.litteral,
+            Expressions::Expression { token, .. } => &token.litteral,
             Expressions::Identifier { token, .. } => &token.litteral,
         }
     }
@@ -105,7 +105,7 @@ impl Node for Expressions {
 impl Display for Expressions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expressions::ExpressionStatement { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::Expression { token, .. } => write!(f, "{}", token.litteral),
             Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral,),
         }
     }

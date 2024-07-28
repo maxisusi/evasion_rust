@@ -5,25 +5,25 @@ mod tests {
     use std::collections::VecDeque;
 
     use crate::{
-        ast::{Expressions, Programs, Statements},
-        token::{Token, TokenType},
+        ast::{Expressions, Program, Statements},
+        token::{Token, TokenTypes},
     };
 
     #[test]
     fn test_display_ast() {
-        let statments = VecDeque::from([Statements::LetStatement {
-            token: Token::new(TokenType::LET, "let"),
+        let statments = VecDeque::from([Statements::Let {
+            token: Token::new(TokenTypes::LET, "let"),
             name: Expressions::Identifier {
-                token: Token::new(TokenType::IDENT, "myVar"),
+                token: Token::new(TokenTypes::IDENT, "myVar"),
                 value: "myVar".to_string(),
             },
             value: Expressions::Identifier {
                 value: "anotherVar".to_string(),
-                token: Token::new(TokenType::IDENT, "anotherVar"),
+                token: Token::new(TokenTypes::IDENT, "anotherVar"),
             },
         }]);
 
-        let program = Programs { statments };
+        let program = Program { statments };
 
         if program.to_string() != "let myVar = anotherVar;".to_string() {
             panic!("Couldn't print properly, got={}", program)
