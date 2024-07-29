@@ -35,23 +35,45 @@ impl Program {
 impl Display for Program {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for stmt in self.statments.iter() {
-            match stmt {
-                Nodes::Statement(stmt) => write!(f, "{}", stmt).unwrap(),
-                Nodes::Expression(expr) => write!(f, "{}", expr).unwrap(),
-            }
+            write!(f, "{}", stmt).unwrap()
         }
         return write!(f, "");
     }
 }
 
 // ------------------------
-// * STATEMENTS
+// * NODES
 // ------------------------
-//
+
 pub enum Nodes {
     Statement(Statements),
     Expression(Expressions),
 }
+
+impl Display for Nodes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Nodes::Statement(stmt) => write!(f, "{}", stmt),
+            Nodes::Expression(stmt) => write!(f, "{}", stmt),
+        }
+    }
+}
+
+impl From<Statements> for Nodes {
+    fn from(stmt: Statements) -> Self {
+        Nodes::Statement(stmt)
+    }
+}
+
+impl From<Expressions> for Nodes {
+    fn from(expr: Expressions) -> Self {
+        Nodes::Expression(expr)
+    }
+}
+
+// ------------------------
+// * STATEMENTS
+// ------------------------
 
 pub enum Statements {
     Return {

@@ -73,12 +73,12 @@ impl Parser {
             match self.cur_token.token_type {
                 TokenTypes::LET => {
                     if let Some(stmt) = self.parse_let_statement() {
-                        program.statments.push(Nodes::Statement(stmt));
+                        program.statments.push(Nodes::from(stmt));
                     }
                 }
                 TokenTypes::RETURN => {
                     if let Some(stmt) = self.parse_return_statement() {
-                        program.statments.push(Nodes::Statement(stmt));
+                        program.statments.push(Nodes::from(stmt));
                     }
                 }
                 _ => {}

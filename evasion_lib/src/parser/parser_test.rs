@@ -40,7 +40,12 @@ mod tests {
 
             for identif in expected_identifier {
                 if let Some(stmt) = program_iter.next() {
-                    h_test_let_statments(stmt, identif);
+                    match &stmt {
+                        Nodes::Statement(stmt) => {
+                            h_test_let_statments(stmt, identif);
+                        }
+                        n => panic!("Expected Let statement but got={}", n),
+                    }
                 } else {
                     break;
                 }
@@ -119,7 +124,7 @@ mod tests {
             for _ in expected_identifier {
                 if let Some(stmt) = program_iter.next() {
                     match &stmt {
-                        Statements::Return { .. } => {
+                        Nodes::Statement(stmt) => {
                             if stmt.token_litteral() != "return" {
                                 panic!(
                                     "token_litteral() not 'return', got={}",
@@ -128,8 +133,8 @@ mod tests {
                             }
                             // TODO: Check the expression as well
                         }
-                        _ => {
-                            panic!("Expected ReturnStatement, got={}", stmt)
+                        n => {
+                            panic!("Expected ReturnStatement, got={}", n)
                         }
                     }
                 } else {
@@ -163,7 +168,7 @@ mod tests {
                         );
                     }
                 }
-                _ => panic!("Was exprecting something else..."),
+                n => panic!("Was exprecting, got={}", n),
             };
         }
     }

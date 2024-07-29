@@ -10,7 +10,7 @@ mod tests {
 
     #[test]
     fn test_display_ast() {
-        let statments = Vec::from([Nodes::Statement(Statements::Let {
+        let statments = Vec::from([Nodes::from(Statements::Let {
             token: Token::new(TokenTypes::LET, "let"),
             name: Expressions::Identifier {
                 token: Token::new(TokenTypes::IDENT, "myVar"),
