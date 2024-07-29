@@ -39,12 +39,12 @@ mod tests {
             let mut program_iter = program.statments.iter();
 
             for identif in expected_identifier {
-                if let Some(stmt) = program_iter.next() {
-                    match &stmt {
+                if let Some(nodes) = program_iter.next() {
+                    match &nodes {
                         Nodes::Statement(stmt) => {
                             h_test_let_statments(stmt, identif);
                         }
-                        n => panic!("Expected Let statement but got={}", n),
+                        n => panic!("Expected Statement but got={}", n),
                     }
                 } else {
                     break;
@@ -122,19 +122,24 @@ mod tests {
             let mut program_iter = program.statments.iter();
 
             for _ in expected_identifier {
-                if let Some(stmt) = program_iter.next() {
-                    match &stmt {
-                        Nodes::Statement(stmt) => {
-                            if stmt.token_litteral() != "return" {
-                                panic!(
-                                    "token_litteral() not 'return', got={}",
-                                    stmt.token_litteral()
-                                );
+                if let Some(node) = program_iter.next() {
+                    match &node {
+                        Nodes::Statement(stmts) => {
+                            match stmts {
+                                Statements::Return { token, .. } => {
+                                    if stmts.token_litteral() != "return" {
+                                        panic!(
+                                            "token_litteral() not 'return', got={}",
+                                            stmts.token_litteral()
+                                        );
+                                    }
+                                }
+                                n => panic!("Expected ReturnStatement, got={}", n),
                             }
                             // TODO: Check the expression as well
                         }
                         n => {
-                            panic!("Expected ReturnStatement, got={}", n)
+                            panic!("Expected Statement, got={}", n)
                         }
                     }
                 } else {
@@ -157,6 +162,13 @@ mod tests {
         check_parser_errors(&mut parser);
 
         if let Some(program) = program {
+            if program.statments.len() != 1 {
+                panic!(
+                    "program.statments doesn't contain 1 statments, got={}",
+                    program.statments.len()
+                )
+            }
+
             let stmt = &program.statments[0];
 
             match stmt {
@@ -167,6 +179,8 @@ mod tests {
                             stmt.token_litteral()
                         );
                     }
+
+                    // if stmt.va
                 }
                 n => panic!("Was exprecting, got={}", n),
             };
