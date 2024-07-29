@@ -16,13 +16,16 @@ pub trait Node: Display {
 // ------------------------
 
 pub struct Program {
-    pub statments: Vec<Statements>,
+    pub statments: Vec<Nodes>,
 }
 
 impl Program {
     fn token_litteral(&self) -> &str {
         if self.statments.len() > 0 {
-            return self.statments[0].token_litteral();
+            match self.statments[0] {
+                Nodes::Statement(ref stmt) => stmt.token_litteral(),
+                Nodes::Expression(ref expr) => expr.token_litteral(),
+            }
         } else {
             ""
         }
@@ -32,7 +35,10 @@ impl Program {
 impl Display for Program {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for stmt in self.statments.iter() {
-            write!(f, "{}", stmt).unwrap()
+            match stmt {
+                Nodes::Statement(stmt) => write!(f, "{}", stmt).unwrap(),
+                Nodes::Expression(expr) => write!(f, "{}", expr).unwrap(),
+            }
         }
         return write!(f, "");
     }
@@ -41,6 +47,11 @@ impl Display for Program {
 // ------------------------
 // * STATEMENTS
 // ------------------------
+//
+pub enum Nodes {
+    Statement(Statements),
+    Expression(Expressions),
+}
 
 pub enum Statements {
     Return {

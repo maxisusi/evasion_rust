@@ -4,13 +4,13 @@ mod tests {
     use core::panic;
 
     use crate::{
-        ast::{Expressions, Program, Statements},
+        ast::{Expressions, Nodes, Program, Statements},
         token::{Token, TokenTypes},
     };
 
     #[test]
     fn test_display_ast() {
-        let statments = Vec::from([Statements::Let {
+        let statments = Vec::from([Nodes::Statement(Statements::Let {
             token: Token::new(TokenTypes::LET, "let"),
             name: Expressions::Identifier {
                 token: Token::new(TokenTypes::IDENT, "myVar"),
@@ -20,7 +20,7 @@ mod tests {
                 value: "anotherVar".to_string(),
                 token: Token::new(TokenTypes::IDENT, "anotherVar"),
             },
-        }]);
+        })]);
 
         let program = Program { statments };
 

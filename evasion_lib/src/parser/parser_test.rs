@@ -4,9 +4,10 @@ mod tests {
     use core::panic;
 
     use crate::{
-        ast::{Node, Statements},
+        ast::{Node, Nodes, Statements},
         lexer::Lexer,
         parser::Parser,
+        token,
     };
 
     // LET STATMENTS
@@ -137,6 +138,33 @@ mod tests {
             }
         } else {
             panic!("parse_program() return null")
+        }
+    }
+
+    #[test]
+    fn test_identifier() {
+        let input = "foobar;";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&mut parser);
+
+        if let Some(program) = program {
+            let stmt = &program.statments[0];
+
+            match stmt {
+                Nodes::Statement(stmt) => {
+                    if stmt.token_litteral() != "foobar" {
+                        panic!(
+                            "token_litteral() not 'foobar', got={}",
+                            stmt.token_litteral()
+                        );
+                    }
+                }
+                _ => panic!("Was exprecting something else..."),
+            };
         }
     }
 }
