@@ -85,6 +85,19 @@ impl Parser {
                 token: token.clone(),
                 value: token.litteral,
             },
+            TokenTypes::INT => {
+                let number = if let Ok(num) = token.litteral.parse::<u64>() {
+                    num
+                } else {
+                    println!("Couldn't parse integer value to u64");
+                    return None;
+                };
+
+                Expressions::IntegerLiteral {
+                    token: token.clone(),
+                    value: number,
+                }
+            }
             _ => return None,
         };
 
