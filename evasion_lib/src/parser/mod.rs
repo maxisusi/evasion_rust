@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{
     ast::{Expressions, Nodes, Program, Statements},
     lexer::Lexer,
-    token::{Token, TokenTypes},
+    token::{self, Token, TokenTypes},
 };
 
 struct Parser {
@@ -13,8 +13,6 @@ struct Parser {
     cur_token: Token,
     peek_token: Token,
     errors: Vec<String>,
-    prefix_expr: HashMap<String, fn() -> Expressions>,
-    infix_expr: HashMap<String, fn() -> Expressions>,
 }
 
 impl Parser {
@@ -24,8 +22,6 @@ impl Parser {
             cur_token: Token::new(TokenTypes::ILLEGLAL, ""),
             peek_token: Token::new(TokenTypes::ILLEGLAL, ""),
             errors: vec![],
-            infix_expr: HashMap::new(),
-            prefix_expr: HashMap::new(),
         };
 
         // Read twice so cur_token and peek_token are both set
@@ -33,18 +29,6 @@ impl Parser {
         p.next_token();
 
         return Box::new(p);
-    }
-
-    fn register_prefix(&mut self, token_type: TokenTypes, reg_fn: fn() -> Expressions) {
-        self.infix_expr
-            .insert(token_type.to_string(), reg_fn)
-            .unwrap();
-    }
-
-    fn register_infix(&mut self, token_type: TokenTypes, reg_fn: fn() -> Expressions) {
-        self.infix_expr
-            .insert(token_type.to_string(), reg_fn)
-            .unwrap();
     }
 
     fn errors(&self) -> &Vec<String> {
@@ -81,12 +65,34 @@ impl Parser {
                         program.statments.push(Nodes::from(stmt));
                     }
                 }
-                _ => {}
+                _ => {
+                    if let Some(stmt) = self.parse_expression_stmt() {
+                        program.statments.push(Nodes::from(stmt));
+                    }
+                }
             }
             self.next_token();
         }
 
         Some(program)
+    }
+
+    fn parse_expression_stmt(&mut self) -> Option<Expressions> {
+        let token = self.cur_token.clone();
+
+        let expression = match token.token_type {
+            TokenTypes::IDENT => Expressions::Identifier {
+                token: token.clone(),
+                value: token.litteral,
+            },
+            _ => return None,
+        };
+
+        if self.peek_token_is(TokenTypes::SEMICOLON) {
+            self.next_token()
+        }
+
+        Some(expression)
     }
 
     fn parse_return_statement(&mut self) -> Option<Statements> {

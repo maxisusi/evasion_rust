@@ -172,17 +172,15 @@ mod tests {
             let stmt = &program.statments[0];
 
             match stmt {
-                Nodes::Statement(stmt) => {
+                Nodes::Expression(stmt) => {
                     if stmt.token_litteral() != "foobar" {
                         panic!(
                             "token_litteral() not 'foobar', got={}",
                             stmt.token_litteral()
                         );
                     }
-
-                    // if stmt.va
                 }
-                n => panic!("Was exprecting, got={}", n),
+                n => panic!("was exprecting Expression, got={}", n),
             };
         }
     }
