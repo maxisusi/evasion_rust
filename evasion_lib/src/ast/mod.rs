@@ -127,6 +127,11 @@ pub enum Expressions {
         token: Token,
         value: String,
     },
+
+    IntegerLiteral {
+        token: Token,
+        value: u64,
+    },
 }
 
 impl Node for Expressions {
@@ -134,6 +139,7 @@ impl Node for Expressions {
         match self {
             Expressions::Expression { token, .. } => &token.litteral,
             Expressions::Identifier { token, .. } => &token.litteral,
+            Expressions::IntegerLiteral { token, .. } => &token.litteral,
         }
     }
 }
@@ -142,7 +148,8 @@ impl Display for Expressions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Expressions::Expression { token, .. } => write!(f, "{}", token.litteral),
-            Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral,),
+            Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::IntegerLiteral { token, .. } => write!(f, "{}", token.litteral),
         }
     }
 }

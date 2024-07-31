@@ -4,7 +4,7 @@ mod tests {
     use core::panic;
 
     use crate::{
-        ast::{Node, Nodes, Statements},
+        ast::{Expressions, Node, Nodes, Statements},
         lexer::Lexer,
         parser::Parser,
         token,
@@ -134,7 +134,7 @@ mod tests {
                                         );
                                     }
                                 }
-                                n => panic!("Expected ReturnStatement, got={}", n),
+                                n => panic!("Expected ReturnStatement, got={}", n.token_litteral()),
                             }
                             // TODO: Check the expression as well
                         }
@@ -150,6 +150,8 @@ mod tests {
             panic!("parse_program() return null")
         }
     }
+
+    // EXPRESSIONS
 
     #[test]
     fn test_identifier() {
@@ -169,17 +171,55 @@ mod tests {
                 )
             }
 
+            let node = &program.statments[0];
+
+            match node {
+                Nodes::Expression(stmt) => match stmt {
+                    Expressions::Identifier { .. } => {
+                        if stmt.token_litteral() != "foobar" {
+                            panic!(
+                                "token_litteral() not 'foobar', got={}",
+                                stmt.token_litteral()
+                            );
+                        }
+                    }
+                    _ => panic!("was expecting Identifier, got={}", stmt.token_litteral()),
+                },
+                n => panic!("was exprecting Expression, got={}", n),
+            };
+        }
+    }
+
+    #[test]
+    fn test_integer_litteral() {
+        let input = "5;";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&mut parser);
+
+        if let Some(program) = program {
+            if program.statments.len() != 1 {
+                panic!(
+                    "program.statments doesn't contain 1 statments, got={}",
+                    program.statments.len()
+                )
+            }
+
             let stmt = &program.statments[0];
 
             match stmt {
-                Nodes::Expression(stmt) => {
-                    if stmt.token_litteral() != "foobar" {
-                        panic!(
-                            "token_litteral() not 'foobar', got={}",
-                            stmt.token_litteral()
-                        );
+                Nodes::Expression(stmt) => match stmt {
+                    Expressions::IntegerLiteral { .. } => {
+                        if stmt.token_litteral() != "5" {
+                            panic!("token_litteral() not '5', got={}", stmt.token_litteral());
+                        }
                     }
-                }
+
+                    n => panic!("was exprecting IntegerLiteral, got={}", n),
+                },
                 n => panic!("was exprecting Expression, got={}", n),
             };
         }
