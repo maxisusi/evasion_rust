@@ -1,7 +1,5 @@
-#[cfg(test)]
-
 mod tests {
-    use core::panic;
+    use std::{ops::Deref, usize};
 
     use crate::{
         ast::{Expressions, Node, Nodes, Statements},
@@ -222,6 +220,89 @@ mod tests {
                 },
                 n => panic!("was exprecting Expression, got={}", n),
             };
+        }
+    }
+
+    #[test]
+    fn test_parsing_infix_expression() {
+        struct InfixTests {
+            input: String,
+            left: usize,
+            op: String,
+            right: usize,
+        }
+        impl InfixTests {
+            fn new<T>(input: T, left: usize, op: T, right: usize) -> InfixTests
+            where
+                T: Into<String>,
+            {
+                Self {
+                    input: input.into(),
+                    left,
+                    right,
+                    op: op.into(),
+                }
+            }
+        }
+        let tests = vec![
+            InfixTests::new("5 + 5", 5, "+", 5),
+            InfixTests::new("5 - 5", 5, "-", 5),
+            InfixTests::new("5 * 5", 5, "*", 5),
+            InfixTests::new("5 / 5", 5, "/", 5),
+            InfixTests::new("5 < 5", 5, "<", 5),
+            InfixTests::new("5 > 5", 5, ">", 5),
+            InfixTests::new("5 == 5", 5, "==", 5),
+            InfixTests::new("5 != 5", 5, "!=", 5),
+        ];
+
+        for test in tests.iter() {
+            let lexer = Lexer::new(test.input.as_str());
+            let mut parser = Parser::new(lexer);
+
+            let program = parser.parse_program();
+            check_parser_errors(&mut parser);
+
+            if let Some(stmt) = program {
+                let stmt = &stmt.statments[0];
+
+                match stmt {
+                    Nodes::Expression(stmt) => match stmt {
+                        Expressions::Expression { expression, .. } => {
+                            // Test if the expression is infix
+                            let expr = expression.deref();
+                            match expr {
+                                Expressions::Infix {
+                                    token: _token,
+                                    left,
+                                    operator,
+                                    right,
+                                } => {
+                                    h_test_interger(left.token_litteral().to_string(), test.left);
+                                    h_test_interger(right.token_litteral().to_string(), test.left);
+                                    if *operator != test.op {
+                                        panic!("Expected {}, got={}", test.op, operator);
+                                    }
+                                }
+                                _ => panic!("Expected an Expression infix, got={}", expr),
+                            }
+                        }
+                        _ => {
+                            panic!("Expected Expression, got={}", stmt)
+                        }
+                    },
+                    _ => {
+                        panic!("Expected an expression, got={}", stmt)
+                    }
+                }
+            }
+        }
+    }
+
+    fn h_test_interger(elem: String, exp: usize) {
+        let elem_to_int = elem.parse::<usize>().unwrap();
+
+        if elem_to_int != exp {
+            panic!("Expected {}, got={}", exp, elem)
         }
     }
 }

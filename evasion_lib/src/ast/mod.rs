@@ -132,6 +132,12 @@ pub enum Expressions {
         token: Token,
         value: u64,
     },
+    Infix {
+        token: Token,
+        left: Box<Expressions>,
+        operator: String,
+        right: Box<Expressions>,
+    },
 }
 
 impl Node for Expressions {
@@ -140,6 +146,7 @@ impl Node for Expressions {
             Expressions::Expression { token, .. } => &token.litteral,
             Expressions::Identifier { token, .. } => &token.litteral,
             Expressions::IntegerLiteral { token, .. } => &token.litteral,
+            Expressions::Infix { token, .. } => &token.litteral,
         }
     }
 }
@@ -150,6 +157,12 @@ impl Display for Expressions {
             Expressions::Expression { token, .. } => write!(f, "{}", token.litteral),
             Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral),
             Expressions::IntegerLiteral { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::Infix {
+                token: _,
+                left,
+                right,
+                operator,
+            } => write!(f, "({} {} {})", left, operator, right),
         }
     }
 }
