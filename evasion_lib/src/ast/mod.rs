@@ -9,6 +9,7 @@ use std::fmt::Display;
 
 pub trait Node: Display {
     fn token_litteral(&self) -> &str;
+    fn display_type(&self) -> &str;
 }
 
 // ------------------------
@@ -97,6 +98,12 @@ impl Node for Statements {
             Statements::Let { token, .. } => &token.litteral,
         }
     }
+    fn display_type(&self) -> &str {
+        match self {
+            Statements::Return { .. } => "Return Statement",
+            Statements::Let { .. } => "Let Statement",
+        }
+    }
 }
 
 impl Display for Statements {
@@ -119,7 +126,7 @@ impl Display for Statements {
 // ------------------------
 
 pub enum Expressions {
-    Expression {
+    Generic {
         token: Token,
         expression: Box<Expressions>,
     },
@@ -143,10 +150,19 @@ pub enum Expressions {
 impl Node for Expressions {
     fn token_litteral(&self) -> &str {
         match self {
-            Expressions::Expression { token, .. } => &token.litteral,
+            Expressions::Generic { token, .. } => &token.litteral,
             Expressions::Identifier { token, .. } => &token.litteral,
             Expressions::IntegerLiteral { token, .. } => &token.litteral,
             Expressions::Infix { token, .. } => &token.litteral,
+        }
+    }
+
+    fn display_type(&self) -> &str {
+        match self {
+            Expressions::Infix { .. } => "Infix Expression",
+            Expressions::IntegerLiteral { .. } => "Integer Literal Expression",
+            Expressions::Generic { .. } => "Expression",
+            Expressions::Identifier { .. } => "Identifer",
         }
     }
 }
@@ -154,7 +170,7 @@ impl Node for Expressions {
 impl Display for Expressions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expressions::Expression { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::Generic { token, .. } => write!(f, "{}", token.litteral),
             Expressions::Identifier { token, .. } => write!(f, "{}", token.litteral),
             Expressions::IntegerLiteral { token, .. } => write!(f, "{}", token.litteral),
             Expressions::Infix {

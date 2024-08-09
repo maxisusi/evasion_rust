@@ -72,7 +72,7 @@ mod tests {
 
                 //TODO: Check the expression as well (value)
             }
-            _ => panic!("Expected a Let statement but got={}", stmt),
+            _ => panic!("Expected a Let statement but got={}", stmt.display_type()),
         }
     }
 
@@ -132,7 +132,7 @@ mod tests {
                                         );
                                     }
                                 }
-                                n => panic!("Expected ReturnStatement, got={}", n.token_litteral()),
+                                n => panic!("Expected ReturnStatement, got={}", n.display_type()),
                             }
                             // TODO: Check the expression as well
                         }
@@ -181,7 +181,7 @@ mod tests {
                             );
                         }
                     }
-                    _ => panic!("was expecting Identifier, got={}", stmt.token_litteral()),
+                    _ => panic!("was expecting Identifier, got={}", stmt.display_type()),
                 },
                 n => panic!("was exprecting Expression, got={}", n),
             };
@@ -216,7 +216,7 @@ mod tests {
                         }
                     }
 
-                    n => panic!("was exprecting IntegerLiteral, got={}", n),
+                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
                 },
                 n => panic!("was exprecting Expression, got={}", n),
             };
@@ -267,7 +267,7 @@ mod tests {
 
                 match stmt {
                     Nodes::Expression(stmt) => match stmt {
-                        Expressions::Expression { expression, .. } => {
+                        Expressions::Generic { expression, .. } => {
                             // Test if the expression is infix
                             let expr = expression.deref();
                             match expr {
@@ -283,11 +283,11 @@ mod tests {
                                         panic!("Expected {}, got={}", test.op, operator);
                                     }
                                 }
-                                _ => panic!("Expected an Expression infix, got={}", expr),
+                                _ => panic!("Expected infix, got={}", expr.display_type()),
                             }
                         }
                         _ => {
-                            panic!("Expected Expression, got={}", stmt)
+                            panic!("Expected Generic expression, got={}", stmt.display_type())
                         }
                     },
                     _ => {
