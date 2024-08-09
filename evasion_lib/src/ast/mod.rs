@@ -145,6 +145,11 @@ pub enum Expressions {
         operator: String,
         right: Box<Expressions>,
     },
+    Prefix {
+        token: Token,
+        operator: String,
+        right: Box<Expressions>,
+    },
 }
 
 impl Node for Expressions {
@@ -154,12 +159,14 @@ impl Node for Expressions {
             Expressions::Identifier { token, .. } => &token.litteral,
             Expressions::IntegerLiteral { token, .. } => &token.litteral,
             Expressions::Infix { token, .. } => &token.litteral,
+            Expressions::Prefix { token, .. } => &token.litteral,
         }
     }
 
     fn display_type(&self) -> &str {
         match self {
             Expressions::Infix { .. } => "Infix Expression",
+            Expressions::Prefix { .. } => "Prefic Expression",
             Expressions::IntegerLiteral { .. } => "Integer Literal Expression",
             Expressions::Generic { .. } => "Expression",
             Expressions::Identifier { .. } => "Identifer",
@@ -179,6 +186,11 @@ impl Display for Expressions {
                 right,
                 operator,
             } => write!(f, "({} {} {})", left, operator, right),
+            Expressions::Prefix {
+                token: _,
+                right,
+                operator,
+            } => write!(f, "({} {})", operator, right),
         }
     }
 }
