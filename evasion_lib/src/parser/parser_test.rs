@@ -262,24 +262,20 @@ mod tests {
                 match stmt {
                     Nodes::Expression(stmt) => match stmt {
                         Expressions::Prefix {
-                            token,
+                            token: _token,
                             right,
                             operator,
                         } => {
                             // Test if the expression is infix
                             let right = right.deref();
                             match right {
-                                Expressions::Prefix {
-                                    token: _token,
-                                    operator,
-                                    right,
-                                } => {
-                                    h_test_interger(right.deref(), test.interger_value);
+                                Expressions::IntegerLiteral { .. } => {
+                                    h_test_interger(right, test.interger_value);
                                     if *operator != test.operator {
                                         panic!("Expected {}, got={}", test.operator, operator);
                                     }
                                 }
-                                _ => panic!("Expected infix, got={}", right.display_type()),
+                                _ => panic!("Expected prefix, got={}", right.display_type()),
                             }
                         }
                         _ => {

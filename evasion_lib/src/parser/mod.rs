@@ -15,6 +15,28 @@ struct Parser {
     errors: Vec<String>,
 }
 
+enum Prefix {
+    Lowest,
+    Equals,
+    LessGreater,
+    Sum,
+    Product,
+    Call,
+}
+impl Prefix {
+    fn get_binding_power(prefix: Prefix) -> u8 {
+        match prefix {
+            Prefix::Lowest => 0,
+            Prefix::Equals => 1,
+            Prefix::LessGreater => 2,
+            Prefix::Sum => 3,
+            Prefix::Product => 4,
+            Prefix::Call => 6,
+            _ => 0,
+        }
+    }
+}
+
 impl Parser {
     fn new(lexer: Lexer) -> Box<Parser> {
         let mut p = Parser {
@@ -66,7 +88,7 @@ impl Parser {
                     }
                 }
                 _ => {
-                    if let Some(stmt) = self.parse_expression_stmt() {
+                    if let Some(stmt) = self.parse_expression_stmt(0) {
                         program.statments.push(Nodes::from(stmt));
                     }
                 }
@@ -77,7 +99,7 @@ impl Parser {
         Some(program)
     }
 
-    fn parse_expression_stmt(&mut self) -> Option<Expressions> {
+    fn parse_expression_stmt(&mut self, binding_power: u8) -> Option<Expressions> {
         let token = self.cur_token.clone();
 
         let expression = match token.token_type {
@@ -85,6 +107,24 @@ impl Parser {
                 token: token.clone(),
                 value: token.litteral,
             },
+
+            // Prefix Expressions
+            TokenTypes::BANG | TokenTypes::MINUS => {
+                let token_operator = token.clone();
+                self.next_token();
+
+                if let Some(expresson) = self.parse_expression_stmt(0) {
+                    let prefix_expression = Expressions::Prefix {
+                        token: token_operator.clone(),
+                        operator: token_operator.litteral,
+                        right: Box::new(expresson),
+                    };
+                    return Some(prefix_expression);
+                } else {
+                    return None;
+                }
+            }
+
             TokenTypes::INT => {
                 let number = if let Ok(num) = token.litteral.parse::<u64>() {
                     num
@@ -150,7 +190,7 @@ impl Parser {
         // a semicolon
 
         while !self.cur_tok_is(TokenTypes::SEMICOLON) {
-            self.next_token();
+            self.next_token()
         }
 
         let stmt = Statements::Let {
@@ -164,6 +204,10 @@ impl Parser {
         };
 
         Some(stmt)
+    }
+
+    fn get_precedence(next_token: TokenTypes) -> u8 {
+        todo!()
     }
 
     fn cur_tok_is(&self, tok: TokenTypes) -> bool {
