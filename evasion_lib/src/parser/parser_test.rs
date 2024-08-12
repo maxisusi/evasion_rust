@@ -313,14 +313,14 @@ mod tests {
             }
         }
         let tests = vec![
-            InfixTests::new("5 + 5", 5, "+", 5),
-            InfixTests::new("5 - 5", 5, "-", 5),
-            InfixTests::new("5 * 5", 5, "*", 5),
-            InfixTests::new("5 / 5", 5, "/", 5),
-            InfixTests::new("5 < 5", 5, "<", 5),
-            InfixTests::new("5 > 5", 5, ">", 5),
-            InfixTests::new("5 == 5", 5, "==", 5),
-            InfixTests::new("5 != 5", 5, "!=", 5),
+            InfixTests::new("5 + 5;", 5, "+", 5),
+            InfixTests::new("5 - 5;", 5, "-", 5),
+            InfixTests::new("5 * 5;", 5, "*", 5),
+            InfixTests::new("5 / 5;", 5, "/", 5),
+            InfixTests::new("5 < 5;", 5, "<", 5),
+            InfixTests::new("5 > 5;", 5, ">", 5),
+            InfixTests::new("5 == 5;", 5, "==", 5),
+            InfixTests::new("5 != 5;", 5, "!=", 5),
         ];
 
         for test in tests.iter() {
@@ -335,29 +335,21 @@ mod tests {
 
                 match stmt {
                     Nodes::Expression(stmt) => match stmt {
-                        Expressions::Generic { expression, .. } => {
+                        Expressions::Infix {
+                            token: _token,
+                            left,
+                            operator,
+                            right,
+                        } => {
                             // Test if the expression is infix
-                            let expr = expression.deref();
-                            match expr {
-                                Expressions::Infix {
-                                    token: _token,
-                                    left,
-                                    operator,
-                                    right,
-                                } => {
-                                    h_test_interger(left, test.left);
-                                    h_test_interger(right, test.right);
+                            h_test_interger(&left, test.left);
+                            h_test_interger(&right, test.right);
 
-                                    if *operator != test.op {
-                                        panic!("Expected {}, got={}", test.op, operator);
-                                    }
-                                }
-                                _ => panic!("Expected infix, got={}", expr.display_type()),
+                            if *operator != test.op {
+                                panic!("Expected {}, got={}", test.op, operator);
                             }
                         }
-                        _ => {
-                            panic!("Expected Generic expression, got={}", stmt.display_type())
-                        }
+                        _ => {}
                     },
                     _ => {
                         panic!("Expected an expression, got={}", stmt)

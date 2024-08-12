@@ -1,12 +1,11 @@
 mod parser_test;
 
-use std::{collections::HashMap, path::Prefix};
-
 use crate::{
     ast::{Expressions, Node, Nodes, Program, Statements},
     lexer::Lexer,
     token::{self, Token, TokenTypes},
 };
+use std::{collections::HashMap, path::Prefix};
 
 struct Parser {
     lexer: Lexer,
@@ -39,19 +38,6 @@ impl From<TokenTypes> for Precedence {
         }
     }
 }
-// impl Precedence {
-//     fn get_binding_power(prefix: Precedence) -> u8 {
-//         match prefix {
-//             Precedence::Lowest => 0,
-//             Precedence::Equals => 1,
-//             Precedence::LessGreater => 2,
-//             Precedence::Sum => 3,
-//             Precedence::Product => 4,
-//             Precedence::Call => 6,
-//             _ => 0,
-//         }
-//     }
-// }
 
 impl Parser {
     fn new(lexer: Lexer) -> Box<Parser> {
@@ -118,7 +104,7 @@ impl Parser {
     fn parse_expression_stmt(&mut self, precedence: Precedence) -> Option<Expressions> {
         let token = self.cur_token.clone();
 
-        let left_expression = match token.token_type {
+        let mut left_expression = match token.token_type {
             // Parse Identifier
             TokenTypes::IDENT => Expressions::Identifier {
                 token: token.clone(),
@@ -157,7 +143,7 @@ impl Parser {
         };
 
         // Parse infix expression
-        while !self.peek_token_is(TokenTypes::SEMICOLON) && (precedence <= self.peek_precedence()) {
+        while !self.peek_token_is(TokenTypes::SEMICOLON) && (precedence < self.peek_precedence()) {
             match self.peek_token.token_type {
                 TokenTypes::PLUS
                 | TokenTypes::MINUS
@@ -167,17 +153,23 @@ impl Parser {
                 | TokenTypes::NOTEq
                 | TokenTypes::LT
                 | TokenTypes::GT => {
+                    self.next_token();
+
                     let precedence = self.cur_precedence();
+                    let operator = self.cur_token.clone();
+
+                    self.next_token();
+
                     let right_expression = self.parse_expression_stmt(precedence).unwrap();
 
                     let expression = Expressions::Infix {
                         token: self.cur_token.clone(),
                         left: Box::new(left_expression.clone()),
-                        operator: left_expression.token_litteral().to_string(),
+                        operator: operator.litteral,
                         right: Box::new(right_expression),
                     };
 
-                    Some(expression);
+                    left_expression = expression;
                 }
                 _ => todo!(),
             }
@@ -261,11 +253,7 @@ impl Parser {
     }
 
     fn peek_token_is(&mut self, tok: TokenTypes) -> bool {
-        if self.peek_token.token_type == tok {
-            self.next_token();
-            return true;
-        }
-        return false;
+        self.peek_token.token_type == tok
     }
 
     fn expect_peek(&mut self, tok: TokenTypes) -> bool {
