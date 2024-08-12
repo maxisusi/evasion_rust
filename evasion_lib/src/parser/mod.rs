@@ -1,9 +1,9 @@
 mod parser_test;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Prefix};
 
 use crate::{
-    ast::{Expressions, Nodes, Program, Statements},
+    ast::{Expressions, Node, Nodes, Program, Statements},
     lexer::Lexer,
     token::{self, Token, TokenTypes},
 };
@@ -15,7 +15,8 @@ struct Parser {
     errors: Vec<String>,
 }
 
-enum Prefix {
+#[derive(PartialEq, PartialOrd)]
+enum Precedence {
     Lowest,
     Equals,
     LessGreater,
@@ -23,19 +24,34 @@ enum Prefix {
     Product,
     Call,
 }
-impl Prefix {
-    fn get_binding_power(prefix: Prefix) -> u8 {
-        match prefix {
-            Prefix::Lowest => 0,
-            Prefix::Equals => 1,
-            Prefix::LessGreater => 2,
-            Prefix::Sum => 3,
-            Prefix::Product => 4,
-            Prefix::Call => 6,
-            _ => 0,
+
+impl From<TokenTypes> for Precedence {
+    fn from(value: TokenTypes) -> Self {
+        match value {
+            TokenTypes::EQ => Precedence::Equals,
+            TokenTypes::LT => Precedence::LessGreater,
+            TokenTypes::GT => Precedence::LessGreater,
+            TokenTypes::PLUS => Precedence::Sum,
+            TokenTypes::MINUS => Precedence::Sum,
+            TokenTypes::ASTERISK => Precedence::Product,
+            TokenTypes::SLASH => Precedence::Product,
+            _ => Precedence::Lowest,
         }
     }
 }
+// impl Precedence {
+//     fn get_binding_power(prefix: Precedence) -> u8 {
+//         match prefix {
+//             Precedence::Lowest => 0,
+//             Precedence::Equals => 1,
+//             Precedence::LessGreater => 2,
+//             Precedence::Sum => 3,
+//             Precedence::Product => 4,
+//             Precedence::Call => 6,
+//             _ => 0,
+//         }
+//     }
+// }
 
 impl Parser {
     fn new(lexer: Lexer) -> Box<Parser> {
@@ -88,7 +104,7 @@ impl Parser {
                     }
                 }
                 _ => {
-                    if let Some(stmt) = self.parse_expression_stmt(0) {
+                    if let Some(stmt) = self.parse_expression_stmt(Precedence::Lowest) {
                         program.statments.push(Nodes::from(stmt));
                     }
                 }
@@ -99,21 +115,21 @@ impl Parser {
         Some(program)
     }
 
-    fn parse_expression_stmt(&mut self, binding_power: u8) -> Option<Expressions> {
+    fn parse_expression_stmt(&mut self, precedence: Precedence) -> Option<Expressions> {
         let token = self.cur_token.clone();
 
-        let expression = match token.token_type {
+        let left_expression = match token.token_type {
+            // Parse Identifier
             TokenTypes::IDENT => Expressions::Identifier {
                 token: token.clone(),
                 value: token.litteral,
             },
-
-            // Prefix Expressions
+            // Parse Infix Expression
             TokenTypes::BANG | TokenTypes::MINUS => {
                 let token_operator = token.clone();
                 self.next_token();
 
-                if let Some(expresson) = self.parse_expression_stmt(0) {
+                if let Some(expresson) = self.parse_expression_stmt(Precedence::Lowest) {
                     let prefix_expression = Expressions::Prefix {
                         token: token_operator.clone(),
                         operator: token_operator.litteral,
@@ -124,7 +140,7 @@ impl Parser {
                     return None;
                 }
             }
-
+            // Parse Integer litteral
             TokenTypes::INT => {
                 let number = if let Ok(num) = token.litteral.parse::<u64>() {
                     num
@@ -132,7 +148,6 @@ impl Parser {
                     println!("Couldn't parse integer value to u64");
                     return None;
                 };
-
                 Expressions::IntegerLiteral {
                     token: token.clone(),
                     value: number,
@@ -141,11 +156,42 @@ impl Parser {
             _ => return None,
         };
 
-        if self.peek_token_is(TokenTypes::SEMICOLON) {
-            self.next_token()
+        // Parse infix expression
+        while !self.peek_token_is(TokenTypes::SEMICOLON) && (precedence <= self.peek_precedence()) {
+            match self.peek_token.token_type {
+                TokenTypes::PLUS
+                | TokenTypes::MINUS
+                | TokenTypes::SLASH
+                | TokenTypes::ASTERISK
+                | TokenTypes::EQ
+                | TokenTypes::NOTEq
+                | TokenTypes::LT
+                | TokenTypes::GT => {
+                    let precedence = self.cur_precedence();
+                    let right_expression = self.parse_expression_stmt(precedence).unwrap();
+
+                    let expression = Expressions::Infix {
+                        token: self.cur_token.clone(),
+                        left: Box::new(left_expression.clone()),
+                        operator: left_expression.token_litteral().to_string(),
+                        right: Box::new(right_expression),
+                    };
+
+                    Some(expression);
+                }
+                _ => todo!(),
+            }
         }
 
-        Some(expression)
+        Some(left_expression)
+    }
+
+    fn peek_precedence(&self) -> Precedence {
+        Precedence::from(self.peek_token.token_type)
+    }
+
+    fn cur_precedence(&self) -> Precedence {
+        Precedence::from(self.cur_token.token_type)
     }
 
     fn parse_return_statement(&mut self) -> Option<Statements> {
@@ -214,8 +260,12 @@ impl Parser {
         self.cur_token.token_type == tok
     }
 
-    fn peek_token_is(&self, tok: TokenTypes) -> bool {
-        self.peek_token.token_type == tok
+    fn peek_token_is(&mut self, tok: TokenTypes) -> bool {
+        if self.peek_token.token_type == tok {
+            self.next_token();
+            return true;
+        }
+        return false;
     }
 
     fn expect_peek(&mut self, tok: TokenTypes) -> bool {

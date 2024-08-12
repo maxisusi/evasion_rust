@@ -125,6 +125,7 @@ impl Display for Statements {
 // * EXPRESSIONS
 // ------------------------
 
+#[derive(Clone)]
 pub enum Expressions {
     Generic {
         token: Token,

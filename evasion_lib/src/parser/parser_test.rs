@@ -295,12 +295,12 @@ mod tests {
     fn test_parsing_infix_expression() {
         struct InfixTests {
             input: String,
-            left: usize,
+            left: u64,
             op: String,
-            right: usize,
+            right: u64,
         }
         impl InfixTests {
-            fn new<T>(input: T, left: usize, op: T, right: usize) -> Self
+            fn new<T>(input: T, left: u64, op: T, right: u64) -> Self
             where
                 T: Into<String>,
             {
@@ -345,11 +345,12 @@ mod tests {
                                     operator,
                                     right,
                                 } => {
-                                    // h_test_interger(left.token_litteral().to_string(), test.left);
-                                    // h_test_interger(right.token_litteral().to_string(), test.left);
-                                    // if *operator != test.op {
-                                    //     panic!("Expected {}, got={}", test.op, operator);
-                                    // }
+                                    h_test_interger(left, test.left);
+                                    h_test_interger(right, test.right);
+
+                                    if *operator != test.op {
+                                        panic!("Expected {}, got={}", test.op, operator);
+                                    }
                                 }
                                 _ => panic!("Expected infix, got={}", expr.display_type()),
                             }
