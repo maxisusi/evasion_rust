@@ -21,6 +21,7 @@ enum Precedence {
     LessGreater,
     Sum,
     Product,
+    Prefix,
     Call,
 }
 
@@ -28,6 +29,7 @@ impl From<TokenTypes> for Precedence {
     fn from(value: TokenTypes) -> Self {
         match value {
             TokenTypes::EQ => Precedence::Equals,
+            TokenTypes::NOTEq => Precedence::Equals,
             TokenTypes::LT => Precedence::LessGreater,
             TokenTypes::GT => Precedence::LessGreater,
             TokenTypes::PLUS => Precedence::Sum,
@@ -115,15 +117,12 @@ impl Parser {
                 let token_operator = token.clone();
                 self.next_token();
 
-                if let Some(expresson) = self.parse_expression_stmt(Precedence::Lowest) {
-                    let prefix_expression = Expressions::Prefix {
-                        token: token_operator.clone(),
-                        operator: token_operator.litteral,
-                        right: Box::new(expresson),
-                    };
-                    return Some(prefix_expression);
-                } else {
-                    return None;
+                let expression = self.parse_expression_stmt(Precedence::Prefix).unwrap();
+
+                Expressions::Prefix {
+                    token: token_operator.clone(),
+                    operator: token_operator.litteral,
+                    right: Box::new(expression),
                 }
             }
             // Parse Integer litteral

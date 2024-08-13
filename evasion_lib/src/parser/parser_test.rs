@@ -291,7 +291,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn test_parsing_infix_expression() {
         struct InfixTests {
             input: String,
@@ -368,6 +367,57 @@ mod tests {
             }
             _ => {
                 panic!("Expected an Integer Literal, got={}", elem.display_type())
+            }
+        }
+    }
+
+    #[test]
+    fn test_precedence() {
+        struct Tests {
+            input: String,
+            expected: String,
+        }
+        impl Tests {
+            fn new<T>(input: T, expected: T) -> Self
+            where
+                T: Into<String>,
+            {
+                Self {
+                    input: input.into(),
+                    expected: expected.into(),
+                }
+            }
+        }
+
+        let tests = vec![
+            Tests::new("-a * b", "((-a) * b)"),
+            Tests::new("!-a", "(!(-a))"),
+            Tests::new("a + b + c", "((a + b) + c)"),
+            Tests::new("a + b - c", "((a + b) - c)"),
+            Tests::new("a * b * c", "((a * b) * c)"),
+            Tests::new("a * b / c", "((a * b) / c)"),
+            Tests::new("a + b / c", "(a + (b / c))"),
+            Tests::new("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+            Tests::new("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
+            Tests::new("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+            Tests::new("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+            Tests::new(
+                "3 + 4 * 5 == 3 * 1 + 4 * 5",
+                "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
+            ),
+        ];
+
+        for test in tests.iter() {
+            let lexer = Lexer::new(test.input.as_str());
+            let mut parser = Parser::new(lexer);
+
+            let program = parser.parse_program();
+            check_parser_errors(&mut parser);
+
+            if let Some(program) = program {
+                if test.expected != program.to_string() {
+                    panic!("Expected {}, got={}", test.expected, program.to_string())
+                }
             }
         }
     }

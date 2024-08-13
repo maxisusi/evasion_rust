@@ -191,7 +191,7 @@ impl Display for Expressions {
                 token: _,
                 right,
                 operator,
-            } => write!(f, "({} {})", operator, right),
+            } => write!(f, "({}{})", operator, right),
         }
     }
 }
