@@ -125,7 +125,10 @@ impl Parser {
                     right: Box::new(expression),
                 }
             }
-            // Parse Integer litteral
+            TokenTypes::FALSE | TokenTypes::TRUE => Expressions::Boolean {
+                token: token.clone(),
+                value: token.litteral.parse::<bool>().unwrap(),
+            }, // Parse Integer litteral
             TokenTypes::INT => {
                 let number = if let Ok(num) = token.litteral.parse::<u64>() {
                     num
@@ -137,6 +140,16 @@ impl Parser {
                     token: token.clone(),
                     value: number,
                 }
+            }
+            TokenTypes::LPAREN => {
+                self.next_token();
+                let expression = self.parse_expression_stmt(Precedence::Lowest).unwrap();
+
+                if !self.expect_peek(TokenTypes::RPAREN) {
+                    return None;
+                }
+
+                expression
             }
             _ => return None,
         };

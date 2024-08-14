@@ -405,6 +405,15 @@ mod tests {
                 "3 + 4 * 5 == 3 * 1 + 4 * 5",
                 "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
             ),
+            Tests::new("true", "true"),
+            Tests::new("false", "false"),
+            Tests::new("3 > 5 == false", "((3 > 5) == false)"),
+            Tests::new("3 < 5 == true", "((3 < 5) == true)"),
+            Tests::new("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
+            Tests::new("(5 + 5) * 2", "((5 + 5) * 2)"),
+            Tests::new("2 / (5 + 5)", "(2 / (5 + 5))"),
+            Tests::new("-(5 + 5)", "(-(5 + 5))"),
+            Tests::new("!(true == true)", "(!(true == true))"),
         ];
 
         for test in tests.iter() {

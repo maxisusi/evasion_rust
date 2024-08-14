@@ -151,6 +151,10 @@ pub enum Expressions {
         operator: String,
         right: Box<Expressions>,
     },
+    Boolean {
+        token: Token,
+        value: bool,
+    },
 }
 
 impl Node for Expressions {
@@ -161,6 +165,7 @@ impl Node for Expressions {
             Expressions::IntegerLiteral { token, .. } => &token.litteral,
             Expressions::Infix { token, .. } => &token.litteral,
             Expressions::Prefix { token, .. } => &token.litteral,
+            Expressions::Boolean { token, .. } => &token.litteral,
         }
     }
 
@@ -171,6 +176,7 @@ impl Node for Expressions {
             Expressions::IntegerLiteral { .. } => "Integer Literal Expression",
             Expressions::Generic { .. } => "Expression",
             Expressions::Identifier { .. } => "Identifer",
+            Expressions::Boolean { .. } => "Boolean",
         }
     }
 }
@@ -192,6 +198,7 @@ impl Display for Expressions {
                 right,
                 operator,
             } => write!(f, "({}{})", operator, right),
+            Expressions::Boolean { token, .. } => write!(f, "{}", token.litteral),
         }
     }
 }
