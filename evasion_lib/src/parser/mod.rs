@@ -1,11 +1,10 @@
 mod parser_test;
 
 use crate::{
-    ast::{Expressions, Node, Nodes, Program, Statements},
+    ast::{Expressions, Nodes, Program, Statements},
     lexer::Lexer,
-    token::{self, Token, TokenTypes},
+    token::{Token, TokenTypes},
 };
-use std::{collections::HashMap, path::Prefix};
 
 struct Parser {
     lexer: Lexer,
@@ -42,8 +41,8 @@ impl From<TokenTypes> for Precedence {
 }
 
 impl Parser {
-    fn new(lexer: Lexer) -> Box<Parser> {
-        let mut p = Parser {
+    fn new(lexer: Lexer) -> Box<Self> {
+        let mut p = Self {
             lexer,
             cur_token: Token::new(TokenTypes::ILLEGLAL, ""),
             peek_token: Token::new(TokenTypes::ILLEGLAL, ""),
@@ -57,22 +56,9 @@ impl Parser {
         return Box::new(p);
     }
 
-    fn errors(&self) -> &Vec<String> {
-        &self.errors
-    }
-
-    fn peek_error(&mut self, tok: TokenTypes) {
-        let msg = format!(
-            "expected next token to be {:?}, got {:?} instead",
-            tok, self.peek_token.token_type
-        );
-        self.errors.push(msg);
-    }
-
-    fn next_token(&mut self) {
-        self.cur_token = self.peek_token.clone();
-        self.peek_token = self.lexer.next_token();
-    }
+    // ------------------------
+    // * Entry Point
+    // ------------------------
 
     fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program {
@@ -104,99 +90,120 @@ impl Parser {
     }
 
     fn parse_expression_stmt(&mut self, precedence: Precedence) -> Option<Expressions> {
-        let token = self.cur_token.clone();
-
-        let mut left_expression = match token.token_type {
-            // Parse Identifier
-            TokenTypes::IDENT => Expressions::Identifier {
-                token: token.clone(),
-                value: token.litteral,
-            },
-            // Parse Infix Expression
-            TokenTypes::BANG | TokenTypes::MINUS => {
-                let token_operator = token.clone();
-                self.next_token();
-
-                let expression = self.parse_expression_stmt(Precedence::Prefix).unwrap();
-
-                Expressions::Prefix {
-                    token: token_operator.clone(),
-                    operator: token_operator.litteral,
-                    right: Box::new(expression),
-                }
-            }
-            TokenTypes::FALSE | TokenTypes::TRUE => Expressions::Boolean {
-                token: token.clone(),
-                value: token.litteral.parse::<bool>().unwrap(),
-            }, // Parse Integer litteral
-            TokenTypes::INT => {
-                let number = if let Ok(num) = token.litteral.parse::<u64>() {
-                    num
-                } else {
-                    println!("Couldn't parse integer value to u64");
-                    return None;
-                };
-                Expressions::IntegerLiteral {
-                    token: token.clone(),
-                    value: number,
-                }
-            }
-            TokenTypes::LPAREN => {
-                self.next_token();
-                let expression = self.parse_expression_stmt(Precedence::Lowest).unwrap();
-
-                if !self.expect_peek(TokenTypes::RPAREN) {
-                    return None;
-                }
-
-                expression
-            }
-            _ => return None,
+        let mut left_expression = match self.parse_prefix_expression() {
+            Some(expression) => expression,
+            None => return None,
         };
 
-        // Parse infix expression
         while !self.peek_token_is(TokenTypes::SEMICOLON) && (precedence < self.peek_precedence()) {
-            match self.peek_token.token_type {
-                TokenTypes::PLUS
-                | TokenTypes::MINUS
-                | TokenTypes::SLASH
-                | TokenTypes::ASTERISK
-                | TokenTypes::EQ
-                | TokenTypes::NOTEq
-                | TokenTypes::LT
-                | TokenTypes::GT => {
-                    self.next_token();
-
-                    let precedence = self.cur_precedence();
-                    let operator = self.cur_token.clone();
-
-                    self.next_token();
-
-                    let right_expression = self.parse_expression_stmt(precedence).unwrap();
-
-                    let expression = Expressions::Infix {
-                        token: self.cur_token.clone(),
-                        left: Box::new(left_expression.clone()),
-                        operator: operator.litteral,
-                        right: Box::new(right_expression),
-                    };
-
-                    left_expression = expression;
-                }
-                _ => todo!(),
-            }
+            let infix_expression = self.parse_infix_expression(&left_expression);
+            left_expression = infix_expression;
         }
 
         Some(left_expression)
     }
 
-    fn peek_precedence(&self) -> Precedence {
-        Precedence::from(self.peek_token.token_type)
+    fn parse_prefix_expression(&mut self) -> Option<Expressions> {
+        let expression = match self.cur_token.token_type {
+            TokenTypes::IDENT => self.parse_identifier(),
+            TokenTypes::BANG | TokenTypes::MINUS => self.parse_infix(),
+            TokenTypes::FALSE | TokenTypes::TRUE => self.parse_boolean(),
+            TokenTypes::INT => self.parse_integer_litteral(),
+            TokenTypes::LPAREN => self.parse_left_paren(),
+            _ => return None,
+        };
+
+        Some(expression)
     }
 
-    fn cur_precedence(&self) -> Precedence {
-        Precedence::from(self.cur_token.token_type)
+    fn parse_infix_expression(&mut self, left_expression: &Expressions) -> Expressions {
+        match self.peek_token.token_type {
+            TokenTypes::PLUS
+            | TokenTypes::MINUS
+            | TokenTypes::SLASH
+            | TokenTypes::ASTERISK
+            | TokenTypes::EQ
+            | TokenTypes::NOTEq
+            | TokenTypes::LT
+            | TokenTypes::GT => {
+                self.next_token();
+
+                let precedence = self.cur_precedence();
+                let operator = self.cur_token.clone();
+
+                self.next_token();
+
+                let right_expression = self.parse_expression_stmt(precedence).unwrap();
+
+                let expression = Expressions::Infix {
+                    token: self.cur_token.clone(),
+                    left: Box::new(left_expression.clone()),
+                    operator: operator.litteral,
+                    right: Box::new(right_expression),
+                };
+                expression
+            }
+            _ => todo!(),
+        }
     }
+
+    // ------------------------
+    // * Expressions
+    // ------------------------
+
+    fn parse_identifier(&self) -> Expressions {
+        Expressions::Identifier {
+            token: self.cur_token.clone(),
+            value: self.cur_token.litteral.clone(),
+        }
+    }
+
+    fn parse_infix(&mut self) -> Expressions {
+        let token_operator = self.cur_token.clone();
+        self.next_token();
+
+        let expression = self.parse_expression_stmt(Precedence::Prefix).unwrap();
+
+        Expressions::Prefix {
+            token: token_operator.clone(),
+            operator: token_operator.litteral,
+            right: Box::new(expression),
+        }
+    }
+
+    fn parse_integer_litteral(&self) -> Expressions {
+        let number = if let Ok(num) = self.cur_token.clone().litteral.parse::<u64>() {
+            num
+        } else {
+            panic!("Couldn't parse integer value to u64");
+        };
+        Expressions::IntegerLiteral {
+            token: self.cur_token.clone(),
+            value: number,
+        }
+    }
+
+    fn parse_boolean(&self) -> Expressions {
+        Expressions::Boolean {
+            token: self.cur_token.clone(),
+            value: self.cur_token.clone().litteral.parse::<bool>().unwrap(),
+        }
+    }
+
+    fn parse_left_paren(&mut self) -> Expressions {
+        self.next_token();
+        let expression = self.parse_expression_stmt(Precedence::Lowest).unwrap();
+
+        if !self.expect_peek(TokenTypes::RPAREN) {
+            panic!("Couldn't find right parenthesis")
+        }
+
+        expression
+    }
+
+    // ------------------------
+    // * Statements
+    // ------------------------
 
     fn parse_return_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
@@ -254,6 +261,34 @@ impl Parser {
         };
 
         Some(stmt)
+    }
+
+    // ------------------------
+    // * Helpers
+    // ------------------------
+
+    fn errors(&self) -> &Vec<String> {
+        &self.errors
+    }
+
+    fn peek_error(&mut self, tok: TokenTypes) {
+        let msg = format!(
+            "expected next token to be {:?}, got {:?} instead",
+            tok, self.peek_token.token_type
+        );
+        self.errors.push(msg);
+    }
+
+    fn next_token(&mut self) {
+        self.cur_token = self.peek_token.clone();
+        self.peek_token = self.lexer.next_token();
+    }
+    fn peek_precedence(&self) -> Precedence {
+        Precedence::from(self.peek_token.token_type)
+    }
+
+    fn cur_precedence(&self) -> Precedence {
+        Precedence::from(self.cur_token.token_type)
     }
 
     fn get_precedence(next_token: TokenTypes) -> u8 {
