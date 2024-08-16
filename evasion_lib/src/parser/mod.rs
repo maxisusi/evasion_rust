@@ -143,7 +143,10 @@ impl Parser {
                 };
                 expression
             }
-            _ => todo!(),
+            _ => panic!(
+                "Couldn't parse infix expression, got={}",
+                self.peek_token.token_type
+            ),
         }
     }
 
@@ -289,10 +292,6 @@ impl Parser {
 
     fn cur_precedence(&self) -> Precedence {
         Precedence::from(self.cur_token.token_type)
-    }
-
-    fn get_precedence(next_token: TokenTypes) -> u8 {
-        todo!()
     }
 
     fn cur_tok_is(&self, tok: TokenTypes) -> bool {
