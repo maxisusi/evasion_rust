@@ -229,24 +229,26 @@ mod tests {
         struct PrefixTest {
             input: String,
             operator: String,
-            interger_value: u64,
+            operhand: String,
         }
         impl PrefixTest {
-            fn new<T>(input: T, operator: T, interger_value: u64) -> Self
+            fn new<T>(input: T, operator: T, operhand: T) -> Self
             where
                 T: Into<String>,
             {
                 Self {
                     operator: operator.into(),
-                    interger_value,
+                    operhand: operhand.into(),
                     input: input.into(),
                 }
             }
         }
 
         let tests = vec![
-            PrefixTest::new("!5", "!", 5),
-            PrefixTest::new("-15", "-", 15),
+            PrefixTest::new("!5", "!", "5"),
+            PrefixTest::new("-15", "-", "15"),
+            PrefixTest::new("!true", "!", "true"),
+            PrefixTest::new("!false", "!", "false"),
         ];
 
         for test in tests.iter() {
@@ -266,16 +268,19 @@ mod tests {
                             right,
                             operator,
                         } => {
-                            // Test if the expression is infix
                             let right = right.deref();
-                            match right {
-                                Expressions::IntegerLiteral { .. } => {
-                                    h_test_interger(right, test.interger_value);
-                                    if *operator != test.operator {
-                                        panic!("Expected {}, got={}", test.operator, operator);
-                                    }
+
+                            if let Some(operhand) = test.operhand.parse::<u64>().ok() {
+                                h_test_interger(right, operhand);
+                            } else {
+                                if let Some(operhand) = test.operhand.parse::<bool>().ok() {
+                                    h_test_boolean(right, operhand);
+                                } else {
+                                    panic!("Couldn't convert value to u64 nor boolean");
                                 }
-                                _ => panic!("Expected prefix, got={}", right.display_type()),
+                            }
+                            if *operator != test.operator {
+                                panic!("Expected {}, got={}", test.operator, operator);
                             }
                         }
                         _ => {
