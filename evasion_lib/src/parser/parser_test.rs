@@ -294,32 +294,35 @@ mod tests {
     fn test_parsing_infix_expression() {
         struct InfixTests {
             input: String,
-            left: u64,
+            left: String,
             op: String,
-            right: u64,
+            right: String,
         }
         impl InfixTests {
-            fn new<T>(input: T, left: u64, op: T, right: u64) -> Self
+            fn new<T>(input: T, left: T, op: T, right: T) -> Self
             where
                 T: Into<String>,
             {
                 Self {
                     input: input.into(),
-                    left,
-                    right,
+                    left: left.into(),
+                    right: right.into(),
                     op: op.into(),
                 }
             }
         }
         let tests = vec![
-            InfixTests::new("5 + 5;", 5, "+", 5),
-            InfixTests::new("5 - 5;", 5, "-", 5),
-            InfixTests::new("5 * 5;", 5, "*", 5),
-            InfixTests::new("5 / 5;", 5, "/", 5),
-            InfixTests::new("5 < 5;", 5, "<", 5),
-            InfixTests::new("5 > 5;", 5, ">", 5),
-            InfixTests::new("5 == 5;", 5, "==", 5),
-            InfixTests::new("5 != 5;", 5, "!=", 5),
+            InfixTests::new("5 + 4;", "5", "+", "4"),
+            InfixTests::new("5 - 5;", "5", "-", "5"),
+            InfixTests::new("5 * 5;", "5", "*", "5"),
+            InfixTests::new("5 / 5;", "5", "/", "5"),
+            InfixTests::new("5 < 5;", "5", "<", "5"),
+            InfixTests::new("5 > 5;", "5", ">", "5"),
+            InfixTests::new("5 == 5;", "5", "==", "5"),
+            InfixTests::new("5 != 5;", "5", "!=", "5"),
+            InfixTests::new("true != true;", "true", "!=", "true"),
+            InfixTests::new("false == false;", "false", "==", "false"),
+            InfixTests::new("true == false;", "true", "==", "false"),
         ];
 
         for test in tests.iter() {
@@ -334,20 +337,12 @@ mod tests {
 
                 match stmt {
                     Nodes::Expression(stmt) => match stmt {
-                        Expressions::Infix {
-                            token: _token,
-                            left,
-                            operator,
-                            right,
-                        } => {
-                            // Test if the expression is infix
-                            h_test_interger(&left, test.left);
-                            h_test_interger(&right, test.right);
-
-                            if *operator != test.op {
-                                panic!("Expected {}, got={}", test.op, operator);
-                            }
-                        }
+                        Expressions::Infix { .. } => h_test_infix_expression(
+                            stmt.clone(),
+                            test.left.clone(),
+                            test.op.clone(),
+                            test.right.clone(),
+                        ),
                         _ => {}
                     },
                     _ => {
@@ -358,16 +353,57 @@ mod tests {
         }
     }
 
-    fn h_test_interger(elem: &Expressions, exp: u64) {
-        match elem {
-            Expressions::IntegerLiteral { token, value } => {
-                if *value != exp {
-                    panic!("Expected {}, got={}", exp, value)
+    fn h_test_infix_expression(
+        exp_infix: Expressions,
+        t_left: String,
+        t_op: String,
+        t_right: String,
+    ) {
+        match exp_infix {
+            Expressions::Infix {
+                token: _token,
+                left,
+                operator,
+                right,
+            } => {
+                if let Some(t_left) = t_left.parse::<u64>().ok() {
+                    h_test_interger(&left, t_left);
+                    h_test_interger(&right, t_right.parse().unwrap());
+                } else {
+                    if let Some(t_left) = t_left.parse::<bool>().ok() {
+                        h_test_boolean(&left, t_left);
+                        h_test_boolean(&right, t_right.parse().unwrap());
+                    } else {
+                        panic!(
+                            "Couldn't convert test value to either a boolean or a u64, got={}",
+                            t_left
+                        )
+                    }
                 }
             }
-            _ => {
-                panic!("Expected an Integer Literal, got={}", elem.display_type())
+            _ => panic!("Expected an expression, got={}", exp_infix),
+        }
+    }
+
+    fn h_test_interger(expression: &Expressions, exp: u64) {
+        match expression {
+            Expressions::IntegerLiteral { token, value } => {
+                if *value != exp {
+                    panic!("Was expecting {}, got={}", exp, value)
+                }
             }
+            _ => panic!("Was expecting integer litteral, got={}", expression),
+        }
+    }
+
+    fn h_test_boolean(expression: &Expressions, exp: bool) {
+        match expression {
+            Expressions::Boolean { token, value } => {
+                if *value != exp {
+                    panic!("Was expecting {}, got={}", value, exp)
+                }
+            }
+            _ => panic!("Was expecting integer litteral, got={}", expression),
         }
     }
 
