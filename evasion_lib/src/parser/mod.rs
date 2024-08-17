@@ -184,6 +184,23 @@ impl Parser {
 
         let consequence = self.parse_block_statement();
 
+        if self.peek_token_is(TokenTypes::ELSE) {
+            self.next_token();
+
+            if !self.expect_peek(TokenTypes::LBRACE) {
+                panic!("Was expecting left braces")
+            }
+
+            let alternative = self.parse_block_statement();
+
+            return Expressions::IfExpression {
+                token,
+                condition: Box::new(condition),
+                consequence: Box::new(consequence),
+                alternative: Some(Box::new(alternative)),
+            };
+        }
+
         Expressions::IfExpression {
             token,
             condition: Box::new(condition),
