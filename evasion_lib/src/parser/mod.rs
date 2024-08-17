@@ -66,27 +66,35 @@ impl Parser {
         };
 
         while self.cur_token.token_type != TokenTypes::EOF {
-            match self.cur_token.token_type {
-                TokenTypes::LET => {
-                    if let Some(stmt) = self.parse_let_statement() {
-                        program.statments.push(Nodes::from(stmt));
-                    }
-                }
-                TokenTypes::RETURN => {
-                    if let Some(stmt) = self.parse_return_statement() {
-                        program.statments.push(Nodes::from(stmt));
-                    }
-                }
-                _ => {
-                    if let Some(stmt) = self.parse_expression_stmt(Precedence::Lowest) {
-                        program.statments.push(Nodes::from(stmt));
-                    }
-                }
+            let statement = self.parse_statement();
+            if let Some(statement) = statement {
+                program.statments.push(statement);
             }
             self.next_token();
         }
-
         Some(program)
+    }
+
+    fn parse_statement(&mut self) -> Option<Nodes> {
+        match self.cur_token.token_type {
+            TokenTypes::LET => {
+                if let Some(stmt) = self.parse_let_statement() {
+                    return Some(Nodes::from(stmt));
+                }
+            }
+            TokenTypes::RETURN => {
+                if let Some(stmt) = self.parse_return_statement() {
+                    return Some(Nodes::from(stmt));
+                }
+            }
+            _ => {
+                if let Some(stmt) = self.parse_expression_stmt(Precedence::Lowest) {
+                    return Some(Nodes::from(stmt));
+                }
+            }
+        }
+
+        return None;
     }
 
     fn parse_expression_stmt(&mut self, precedence: Precedence) -> Option<Expressions> {
@@ -110,6 +118,7 @@ impl Parser {
             TokenTypes::FALSE | TokenTypes::TRUE => self.parse_boolean(),
             TokenTypes::INT => self.parse_integer_litteral(),
             TokenTypes::LPAREN => self.parse_left_paren(),
+            TokenTypes::IF => self.parse_if(),
             _ => return None,
         };
 
@@ -153,6 +162,28 @@ impl Parser {
     // ------------------------
     // * Expressions
     // ------------------------
+
+    fn parse_if(&mut self) -> Expressions {
+        let token = self.cur_token.clone();
+
+        if !self.expect_peek(TokenTypes::LPAREN) {
+            panic!("Was expecting left parenthesis")
+        }
+        self.next_token();
+        let condition = self.parse_expression_stmt(Precedence::Lowest);
+
+        if !self.expect_peek(TokenTypes::RPAREN) {
+            panic!("Was expecting right parenthesis")
+        }
+
+        if !self.expect_peek(TokenTypes::LBRACE) {
+            panic!("Was expecting left braces")
+        }
+
+        let consequence = self.parse_block_statement();
+
+        todo!()
+    }
 
     fn parse_identifier(&self) -> Expressions {
         Expressions::Identifier {
@@ -207,6 +238,15 @@ impl Parser {
     // ------------------------
     // * Statements
     // ------------------------
+
+    fn parse_block_statement(&self) -> Statements {
+        let statements: Vec<Statements> = Vec::new();
+
+        while !self.cur_tok_is(TokenTypes::RBRACE) && !self.cur_tok_is(TokenTypes::EOF) {
+            todo!() // Parse statement function
+        }
+        todo!()
+    }
 
     fn parse_return_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
