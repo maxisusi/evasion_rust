@@ -175,8 +175,8 @@ pub enum Expressions {
     IfExpression {
         token: Token,
         condition: Box<Expressions>,
-        consequence: Box<Statements>,
-        alternative: Option<Box<Statements>>,
+        consequence: Box<Statements>, // Should only be block statements but my API suck
+        alternative: Option<Box<Statements>>, // Same here...
     },
 }
 

@@ -170,7 +170,9 @@ impl Parser {
             panic!("Was expecting left parenthesis")
         }
         self.next_token();
-        let condition = self.parse_expression_stmt(Precedence::Lowest);
+        let condition = self
+            .parse_expression_stmt(Precedence::Lowest)
+            .expect("Couldn't parse the condition, sorry");
 
         if !self.expect_peek(TokenTypes::RPAREN) {
             panic!("Was expecting right parenthesis")
@@ -182,7 +184,12 @@ impl Parser {
 
         let consequence = self.parse_block_statement();
 
-        todo!()
+        Expressions::IfExpression {
+            token,
+            condition: Box::new(condition),
+            consequence: Box::new(consequence),
+            alternative: None,
+        }
     }
 
     fn parse_identifier(&self) -> Expressions {
@@ -239,13 +246,21 @@ impl Parser {
     // * Statements
     // ------------------------
 
-    fn parse_block_statement(&self) -> Statements {
-        let statements: Vec<Statements> = Vec::new();
+    fn parse_block_statement(&mut self) -> Statements {
+        let mut statements: Vec<Nodes> = Vec::new();
+        let token = self.cur_token.clone();
+
+        self.next_token();
 
         while !self.cur_tok_is(TokenTypes::RBRACE) && !self.cur_tok_is(TokenTypes::EOF) {
-            todo!() // Parse statement function
+            let statement_node = self.parse_statement();
+            if let Some(node) = statement_node {
+                statements.push(node);
+            }
+            self.next_token()
         }
-        todo!()
+
+        Statements::BlockStatements { token, statements }
     }
 
     fn parse_return_statement(&mut self) -> Option<Statements> {

@@ -333,7 +333,7 @@ mod tests {
                 match stmt {
                     Nodes::Expression(stmt) => match stmt {
                         Expressions::Infix { .. } => h_test_infix_expression(
-                            stmt.clone(),
+                            stmt,
                             test.left.clone(),
                             test.op.clone(),
                             test.right.clone(),
@@ -349,7 +349,7 @@ mod tests {
     }
 
     fn h_test_infix_expression(
-        exp_infix: Expressions,
+        exp_infix: &Expressions,
         t_left: String,
         t_op: String,
         t_right: String,
@@ -369,10 +369,9 @@ mod tests {
                         h_test_boolean(&left, t_left);
                         h_test_boolean(&right, t_right.parse().unwrap());
                     } else {
-                        panic!(
-                            "Couldn't convert test value to either a boolean or a u64, got={}",
-                            t_left
-                        )
+                        // Test Identifier
+                        h_test_identifier(&left, t_left.to_string());
+                        h_test_identifier(&right, t_right.to_string());
                     }
                 }
             }
@@ -470,7 +469,7 @@ mod tests {
                     } => {
                         // Testing conditions
                         h_test_infix_expression(
-                            condition.deref().clone(),
+                            condition,
                             "x".to_string(),
                             ">".to_string(),
                             "y".to_string(),
