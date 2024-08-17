@@ -173,17 +173,7 @@ mod tests {
             let node = &program.statments[0];
 
             match node {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::Identifier { .. } => {
-                        if stmt.token_litteral() != "foobar" {
-                            panic!(
-                                "token_litteral() not 'foobar', got={}",
-                                stmt.token_litteral()
-                            );
-                        }
-                    }
-                    _ => panic!("was expecting Identifier, got={}", stmt.display_type()),
-                },
+                Nodes::Expression(stmt) => h_test_identifier(stmt, "foobar".to_string()),
                 n => panic!("was exprecting Expression, got={}", n),
             };
         }
@@ -390,28 +380,6 @@ mod tests {
         }
     }
 
-    fn h_test_interger(expression: &Expressions, exp: u64) {
-        match expression {
-            Expressions::IntegerLiteral { token, value } => {
-                if *value != exp {
-                    panic!("Was expecting {}, got={}", exp, value)
-                }
-            }
-            _ => panic!("Was expecting integer litteral, got={}", expression),
-        }
-    }
-
-    fn h_test_boolean(expression: &Expressions, exp: bool) {
-        match expression {
-            Expressions::Boolean { token, value } => {
-                if *value != exp {
-                    panic!("Was expecting {}, got={}", value, exp)
-                }
-            }
-            _ => panic!("Was expecting integer litteral, got={}", expression),
-        }
-    }
-
     #[test]
     fn test_precedence() {
         struct Tests {
@@ -469,6 +437,107 @@ mod tests {
                     panic!("Expected {}, got={}", test.expected, program.to_string())
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_if_expression() {
+        let input = "if (x > y) { x }";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&mut parser);
+
+        if let Some(program) = program {
+            if program.statments.len() != 1 {
+                panic!(
+                    "program.statments doesn't contain 1 statments, got={}",
+                    program.statments.len()
+                )
+            }
+
+            let stmt = &program.statments[0];
+
+            match stmt {
+                Nodes::Expression(stmt) => match stmt {
+                    Expressions::IfExpression {
+                        token,
+                        alternative,
+                        consequence,
+                        condition,
+                    } => {
+                        // Testing conditions
+                        h_test_infix_expression(
+                            condition.deref().clone(),
+                            "x".to_string(),
+                            ">".to_string(),
+                            "y".to_string(),
+                        );
+
+                        // Testing consequence Block Statement
+                        let consequence = match consequence.deref() {
+                            Statements::BlockStatements { token, statements } => {
+                                match &statements[0] {
+                                    Nodes::Expression(e) => {
+                                        h_test_identifier(&e, "x".to_string());
+                                    }
+                                    _ => panic!("Expected an Expession, got={}", statements[0]),
+                                }
+                            }
+                            _ => panic!("Expected to find a BlockStatements, got={}", consequence),
+                        };
+
+                        // Check if there is no alternative
+                        if let Some(alt) = alternative {
+                            panic!("Should not have an alternatice statement")
+                        }
+                    }
+
+                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
+                },
+                n => panic!("was exprecting Expression, got={}", n),
+            };
+        }
+    }
+
+    fn h_test_interger(expression: &Expressions, exp: u64) {
+        match expression {
+            Expressions::IntegerLiteral { token, value } => {
+                if *value != exp {
+                    panic!("Was expecting {}, got={}", exp, value)
+                }
+            }
+            _ => panic!("Was expecting integer litteral, got={}", expression),
+        }
+    }
+
+    fn h_test_boolean(expression: &Expressions, exp: bool) {
+        match expression {
+            Expressions::Boolean { token, value } => {
+                if *value != exp {
+                    panic!("Was expecting {}, got={}", value, exp)
+                }
+            }
+            _ => panic!("Was expecting integer litteral, got={}", expression),
+        }
+    }
+
+    fn h_test_identifier(expression: &Expressions, expected: String) {
+        match expression {
+            Expressions::Identifier { .. } => {
+                if expression.token_litteral() != expected {
+                    panic!(
+                        "token_litteral() not 'foobar', got={}",
+                        expression.token_litteral()
+                    );
+                }
+            }
+            _ => panic!(
+                "was expecting Identifier, got={}",
+                expression.display_type()
+            ),
         }
     }
 }

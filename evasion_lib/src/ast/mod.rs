@@ -1,7 +1,7 @@
 mod ast_test;
 use crate::token::Token;
 
-use std::fmt::Display;
+use std::fmt::{write, Display};
 
 // ------------------------
 // * TRAITS
@@ -41,7 +41,7 @@ impl Display for Program {
                 Nodes::Expression(stmt) => write!(f, "{stmt}"),
             };
         }
-        return write!(f, "");
+        Ok(())
     }
 }
 
@@ -49,6 +49,7 @@ impl Display for Program {
 // * NODES
 // ------------------------
 
+#[derive(Clone)]
 pub enum Nodes {
     Statement(Statements),
     Expression(Expressions),
@@ -79,6 +80,7 @@ impl From<Expressions> for Nodes {
 // * STATEMENTS
 // ------------------------
 
+#[derive(Clone)]
 pub enum Statements {
     Return {
         token: Token,
@@ -89,6 +91,10 @@ pub enum Statements {
         name: Expressions,
         value: Expressions,
     },
+    BlockStatements {
+        token: Token,
+        statements: Vec<Nodes>,
+    },
 }
 
 impl Node for Statements {
@@ -96,12 +102,14 @@ impl Node for Statements {
         match self {
             Statements::Return { token, .. } => &token.litteral,
             Statements::Let { token, .. } => &token.litteral,
+            Statements::BlockStatements { token, .. } => &token.litteral,
         }
     }
     fn display_type(&self) -> &str {
         match self {
             Statements::Return { .. } => "Return Statement",
             Statements::Let { .. } => "Let Statement",
+            Statements::BlockStatements { .. } => "Block Statements",
         }
     }
 }
@@ -117,6 +125,15 @@ impl Display for Statements {
                 name,
                 value.token_litteral()
             ),
+            Statements::BlockStatements {
+                token: _token,
+                statements,
+            } => {
+                for statement in statements {
+                    write!(f, "{}", statement);
+                }
+                Ok(())
+            }
         }
     }
 }
@@ -155,6 +172,12 @@ pub enum Expressions {
         token: Token,
         value: bool,
     },
+    IfExpression {
+        token: Token,
+        condition: Box<Expressions>,
+        consequence: Box<Statements>,
+        alternative: Option<Box<Statements>>,
+    },
 }
 
 impl Node for Expressions {
@@ -166,6 +189,7 @@ impl Node for Expressions {
             Expressions::Infix { token, .. } => &token.litteral,
             Expressions::Prefix { token, .. } => &token.litteral,
             Expressions::Boolean { token, .. } => &token.litteral,
+            Expressions::IfExpression { token, .. } => &token.litteral,
         }
     }
 
@@ -177,6 +201,7 @@ impl Node for Expressions {
             Expressions::Generic { .. } => "Expression",
             Expressions::Identifier { .. } => "Identifer",
             Expressions::Boolean { .. } => "Boolean",
+            Expressions::IfExpression { .. } => "If Expression",
         }
     }
 }
@@ -199,6 +224,19 @@ impl Display for Expressions {
                 operator,
             } => write!(f, "({}{})", operator, right),
             Expressions::Boolean { token, .. } => write!(f, "{}", token.litteral),
+            Expressions::IfExpression {
+                token,
+                condition,
+                consequence,
+                alternative,
+            } => {
+                write!(f, "if {} {}", condition, consequence);
+
+                if let Some(alt) = alternative {
+                    write!(f, "else {}", alt).unwrap()
+                }
+                Ok(())
+            }
         }
     }
 }
