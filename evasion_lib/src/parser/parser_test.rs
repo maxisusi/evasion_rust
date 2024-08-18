@@ -200,15 +200,8 @@ mod tests {
             let stmt = &program.statments[0];
 
             match stmt {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::IntegerLiteral { .. } => {
-                        if stmt.token_litteral() != "5" {
-                            panic!("token_litteral() not '5', got={}", stmt.token_litteral());
-                        }
-                    }
+                Nodes::Expression(stmt) => h_test_litteral_expression(stmt, "5".to_string()),
 
-                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
-                },
                 n => panic!("was exprecting Expression, got={}", n),
             };
         }
@@ -682,11 +675,65 @@ mod tests {
                                 h_test_identifier(&parameters[idx], expected_param.to_string());
                             }
                         }
-                        n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
+                        n => panic!("was exprecting FnExpression, got={}", n.display_type()),
                     },
                     n => panic!("was exprecting Expression, got={}", n),
                 };
             }
+        }
+    }
+
+    #[test]
+    fn test_call_expression() {
+        let input = "add(1, 2 * 3, 4 + 5);";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&mut parser);
+
+        if let Some(program) = program {
+            if program.statments.len() != 1 {
+                panic!(
+                    "program.statments doesn't contain 1 statments, got={}",
+                    program.statments.len()
+                )
+            }
+
+            let stmt = &program.statments[0];
+
+            match stmt {
+                Nodes::Expression(stmt) => match stmt {
+                    Expressions::CallExpression {
+                        token,
+                        function,
+                        arguments,
+                    } => {
+                        h_test_identifier(&function, "add".to_string());
+
+                        if arguments.len() != 3 {
+                            panic!("Expected 3 arguments, got={}", arguments.len())
+                        }
+
+                        h_test_litteral_expression(&arguments[0], "1".to_string());
+                        h_test_infix_expression(
+                            &arguments[1],
+                            "2".to_string(),
+                            "*".to_string(),
+                            "3".to_string(),
+                        );
+                        h_test_infix_expression(
+                            &arguments[2],
+                            "4".to_string(),
+                            "+".to_string(),
+                            "5".to_string(),
+                        )
+                    }
+                    n => panic!("was exprecting CallExpression, got={}", n.display_type()),
+                },
+                n => panic!("was exprecting Expression, got={}", n),
+            };
         }
     }
 
@@ -728,5 +775,16 @@ mod tests {
                 expression.display_type()
             ),
         }
+    }
+
+    fn h_test_litteral_expression(exp: &Expressions, expected: String) {
+        return match exp {
+            Expressions::IntegerLiteral { .. } => {
+                if exp.token_litteral() != expected {
+                    panic!("token_litteral() not '5', got={}", exp.token_litteral());
+                }
+            }
+            _ => panic!("was exprecting IntegerLiteral, got={}", exp),
+        };
     }
 }
