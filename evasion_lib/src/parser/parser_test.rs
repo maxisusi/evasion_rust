@@ -634,6 +634,62 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_fn_parameter() {
+        struct Tests {
+            input: String,
+            expected: Vec<String>,
+        }
+
+        impl Tests {
+            fn new<T>(input: T, expected: Vec<String>) -> Self
+            where
+                T: Into<String>,
+            {
+                Self {
+                    input: input.into(),
+                    expected,
+                }
+            }
+        }
+
+        let tests: Vec<Tests> = vec![
+            Tests::new("fn() {}", vec![]),
+            Tests::new("fn(x) {}", vec!["x".to_string()]),
+            Tests::new(
+                "fn(x, y, z) {}",
+                vec!["x".to_string(), "y".to_string(), "z".to_string()],
+            ),
+        ];
+
+        for test in tests.iter() {
+            let lexer = Lexer::new(&test.input);
+            let mut parser = Parser::new(lexer);
+
+            let program = parser.parse_program();
+            check_parser_errors(&mut parser);
+
+            if let Some(program) = program {
+                let stmt = &program.statments[0];
+                match stmt {
+                    Nodes::Expression(stmt) => match stmt {
+                        Expressions::FnExpression {
+                            token,
+                            body,
+                            parameters,
+                        } => {
+                            for (idx, expected_param) in test.expected.iter().enumerate() {
+                                h_test_identifier(&parameters[idx], expected_param.to_string());
+                            }
+                        }
+                        n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
+                    },
+                    n => panic!("was exprecting Expression, got={}", n),
+                };
+            }
+        }
+    }
+
     fn h_test_interger(expression: &Expressions, exp: u64) {
         match expression {
             Expressions::IntegerLiteral { token, value } => {
