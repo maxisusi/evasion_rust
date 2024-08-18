@@ -178,6 +178,11 @@ pub enum Expressions {
         consequence: Box<Statements>, // Should only be block statements but my API suck
         alternative: Option<Box<Statements>>, // Same here...
     },
+    FnExpression {
+        token: Token,
+        parameters: Vec<Expressions>,
+        body: Box<Statements>, // Sane here...
+    },
 }
 
 impl Node for Expressions {
@@ -190,6 +195,7 @@ impl Node for Expressions {
             Expressions::Prefix { token, .. } => &token.litteral,
             Expressions::Boolean { token, .. } => &token.litteral,
             Expressions::IfExpression { token, .. } => &token.litteral,
+            Expressions::FnExpression { token, .. } => &token.litteral,
         }
     }
 
@@ -202,6 +208,7 @@ impl Node for Expressions {
             Expressions::Identifier { .. } => "Identifer",
             Expressions::Boolean { .. } => "Boolean",
             Expressions::IfExpression { .. } => "If Expression",
+            Expressions::FnExpression { .. } => "Fn Expression",
         }
     }
 }
@@ -235,6 +242,22 @@ impl Display for Expressions {
                 if let Some(alt) = alternative {
                     write!(f, "else {}", alt).unwrap()
                 }
+                Ok(())
+            }
+            Expressions::FnExpression {
+                token,
+                parameters,
+                body,
+            } => {
+                write!(f, "fn");
+
+                let params = parameters
+                    .iter()
+                    .map(|p| p.to_string())
+                    .collect::<Vec<String>>();
+
+                write!(f, "({})", params.join(","));
+                write!(f, "{body}");
                 Ok(())
             }
         }
