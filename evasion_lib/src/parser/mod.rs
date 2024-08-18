@@ -119,6 +119,7 @@ impl Parser {
             TokenTypes::INT => self.parse_integer_litteral(),
             TokenTypes::LPAREN => self.parse_left_paren(),
             TokenTypes::IF => self.parse_if(),
+            TokenTypes::FUNCTION => self.parse_fn(),
             _ => return None,
         };
 
@@ -162,6 +163,60 @@ impl Parser {
     // ------------------------
     // * Expressions
     // ------------------------
+
+    fn parse_fn(&mut self) -> Expressions {
+        let token = self.cur_token.clone();
+
+        if !self.expect_peek(TokenTypes::LPAREN) {
+            panic!("Was expecting left parenthesis")
+        }
+
+        let parameters = self.parse_parameter();
+
+        if !self.expect_peek(TokenTypes::LBRACE) {
+            panic!("Was expecting left parenthesis")
+        }
+
+        let body = self.parse_block_statement();
+
+        Expressions::FnExpression {
+            token,
+            parameters,
+            body: Box::new(body),
+        }
+    }
+
+    fn parse_parameter(&mut self) -> Vec<Expressions> {
+        let mut params: Vec<Expressions> = Vec::new();
+
+        if self.peek_token_is(TokenTypes::RPAREN) {
+            self.next_token();
+            return params;
+        }
+        self.next_token();
+
+        params.push(Expressions::Identifier {
+            token: self.cur_token.clone(),
+            value: self.cur_token.litteral.clone(),
+        });
+
+        while self.peek_token_is(TokenTypes::COMMA) {
+            // Move two times to reach the identifier
+            self.next_token();
+            self.next_token();
+
+            params.push(Expressions::Identifier {
+                token: self.cur_token.clone(),
+                value: self.cur_token.litteral.clone(),
+            });
+        }
+
+        if !self.expect_peek(TokenTypes::RPAREN) {
+            panic!("Was expecting right parenthesis")
+        }
+
+        params
+    }
 
     fn parse_if(&mut self) -> Expressions {
         let token = self.cur_token.clone();

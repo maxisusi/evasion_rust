@@ -573,6 +573,67 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_fn_expression() {
+        let input = "fn(x, y) { x + y; }";
+
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+
+        let program = parser.parse_program();
+        check_parser_errors(&mut parser);
+
+        if let Some(program) = program {
+            if program.statments.len() != 1 {
+                panic!(
+                    "program.statments doesn't contain 1 statments, got={}",
+                    program.statments.len()
+                )
+            }
+
+            let stmt = &program.statments[0];
+
+            match stmt {
+                Nodes::Expression(stmt) => match stmt {
+                    Expressions::FnExpression {
+                        token,
+                        body,
+                        parameters,
+                    } => {
+                        if stmt.token_litteral() != "fn" {
+                            panic!(
+                                "Was expecting fn as token litteral, got={}",
+                                stmt.token_litteral()
+                            );
+                        }
+
+                        h_test_identifier(&parameters[0], "x".to_string());
+                        h_test_identifier(&parameters[1], "y".to_string());
+
+                        // Testing consequence Block Statement
+                        let body = match body.deref() {
+                            Statements::BlockStatements { token, statements } => {
+                                match &statements[0] {
+                                    Nodes::Expression(e) => h_test_infix_expression(
+                                        e,
+                                        "x".to_string(),
+                                        "+".to_string(),
+                                        "y".to_string(),
+                                    ),
+                                    _ => panic!("Expected an Expession, got={}", statements[0]),
+                                }
+                            }
+                            _ => panic!("Expected to find a BlockStatements, got={}", body),
+                        };
+                    }
+
+                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
+                },
+                n => panic!("was exprecting Expression, got={}", n),
+            };
+        }
+    }
+
     fn h_test_interger(expression: &Expressions, exp: u64) {
         match expression {
             Expressions::IntegerLiteral { token, value } => {
@@ -600,7 +661,8 @@ mod tests {
             Expressions::Identifier { .. } => {
                 if expression.token_litteral() != expected {
                     panic!(
-                        "token_litteral() not 'foobar', got={}",
+                        "token_litteral() not '{}', got={}",
+                        expected,
                         expression.token_litteral()
                     );
                 }
