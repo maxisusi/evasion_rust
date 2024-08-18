@@ -183,6 +183,11 @@ pub enum Expressions {
         parameters: Vec<Expressions>,
         body: Box<Statements>, // Sane here...
     },
+    CallExpression {
+        token: Token,
+        function: Box<Expressions>,
+        arguments: Vec<Expressions>,
+    },
 }
 
 impl Node for Expressions {
@@ -196,6 +201,7 @@ impl Node for Expressions {
             Expressions::Boolean { token, .. } => &token.litteral,
             Expressions::IfExpression { token, .. } => &token.litteral,
             Expressions::FnExpression { token, .. } => &token.litteral,
+            Expressions::CallExpression { token, .. } => &token.litteral,
         }
     }
 
@@ -209,6 +215,7 @@ impl Node for Expressions {
             Expressions::Boolean { .. } => "Boolean",
             Expressions::IfExpression { .. } => "If Expression",
             Expressions::FnExpression { .. } => "Fn Expression",
+            Expressions::CallExpression { .. } => "Call Expression",
         }
     }
 }
@@ -256,9 +263,21 @@ impl Display for Expressions {
                     .map(|p| p.to_string())
                     .collect::<Vec<String>>();
 
-                write!(f, "({})", params.join(","));
+                write!(f, "({})", params.join(", "));
                 write!(f, "{body}");
                 Ok(())
+            }
+            Expressions::CallExpression {
+                token,
+                function,
+                arguments,
+            } => {
+                let arguments = arguments
+                    .iter()
+                    .map(|p| p.to_string())
+                    .collect::<Vec<String>>();
+
+                write!(f, "{} ({})", function, arguments.join(", "))
             }
         }
     }
