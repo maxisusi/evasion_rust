@@ -715,7 +715,6 @@ mod tests {
                         if arguments.len() != 3 {
                             panic!("Expected 3 arguments, got={}", arguments.len())
                         }
-
                         h_test_litteral_expression(&arguments[0], "1".to_string());
                         h_test_infix_expression(
                             &arguments[1],

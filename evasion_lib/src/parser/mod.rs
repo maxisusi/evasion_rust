@@ -1,5 +1,7 @@
 mod parser_test;
 
+use core::panic;
+
 use crate::{
     ast::{Expressions, Nodes, Program, Statements},
     lexer::Lexer,
@@ -35,6 +37,7 @@ impl From<TokenTypes> for Precedence {
             TokenTypes::MINUS => Precedence::Sum,
             TokenTypes::ASTERISK => Precedence::Product,
             TokenTypes::SLASH => Precedence::Product,
+            TokenTypes::LPAREN => Precedence::Call,
             _ => Precedence::Lowest,
         }
     }
@@ -153,6 +156,10 @@ impl Parser {
                 };
                 expression
             }
+            TokenTypes::LPAREN => {
+                self.next_token();
+                self.parse_call_expression(left_expression)
+            }
             _ => panic!(
                 "Couldn't parse infix expression, got={}",
                 self.peek_token.token_type
@@ -164,6 +171,38 @@ impl Parser {
     // * Expressions
     // ------------------------
 
+    fn parse_call_expression(&mut self, function: &Expressions) -> Expressions {
+        Expressions::CallExpression {
+            token: self.cur_token.clone(),
+            function: Box::new(function.clone()),
+            arguments: self.parse_call_arguments(),
+        }
+    }
+
+    fn parse_call_arguments(&mut self) -> Vec<Expressions> {
+        let mut args: Vec<Expressions> = Vec::new();
+
+        if self.peek_token_is(TokenTypes::RPAREN) {
+            self.next_token();
+            return args;
+        }
+
+        self.next_token();
+        args.push(self.parse_expression_stmt(Precedence::Lowest).unwrap());
+
+        while self.peek_token_is(TokenTypes::COMMA) {
+            self.next_token();
+            self.next_token();
+            args.push(self.parse_expression_stmt(Precedence::Lowest).unwrap());
+        }
+
+        if !self.peek_token_is(TokenTypes::RPAREN) {
+            panic!("Was expecting right parenthesis")
+        }
+
+        args
+    }
+
     fn parse_fn(&mut self) -> Expressions {
         let token = self.cur_token.clone();
 
@@ -174,7 +213,7 @@ impl Parser {
         let parameters = self.parse_parameter();
 
         if !self.expect_peek(TokenTypes::LBRACE) {
-            panic!("Was expecting left parenthesis")
+            panic!("Was expecting left curly bracd")
         }
 
         let body = self.parse_block_statement();
