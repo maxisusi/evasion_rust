@@ -277,7 +277,7 @@ impl Display for Expressions {
                     .map(|p| p.to_string())
                     .collect::<Vec<String>>();
 
-                write!(f, "{} ({})", function, arguments.join(", "))
+                write!(f, "{}({})", function, arguments.join(", "))
             }
         }
     }

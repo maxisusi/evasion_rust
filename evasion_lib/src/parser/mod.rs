@@ -196,7 +196,7 @@ impl Parser {
             args.push(self.parse_expression_stmt(Precedence::Lowest).unwrap());
         }
 
-        if !self.peek_token_is(TokenTypes::RPAREN) {
+        if !self.expect_peek(TokenTypes::RPAREN) {
             panic!("Was expecting right parenthesis")
         }
 
