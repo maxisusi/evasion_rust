@@ -7,8 +7,6 @@ mod tests {
     };
     use std::{ops::Deref, usize};
 
-    // LET STATMENTS
-
     #[test]
     fn test_let_statments() {
         struct Tests {
@@ -73,8 +71,6 @@ mod tests {
                         ident, name
                     );
                 }
-
-                //TODO: Check the expression as well (value)
             }
             _ => panic!("Expected a Let statement but got={}", stmt.display_type()),
         }
@@ -95,65 +91,53 @@ mod tests {
         panic!("Failed to parse input");
     }
 
-    // RETURN STATMENTS
-
     #[test]
     fn test_return_statements() {
-        let input = "
-            return 5;
-            return 10;
-            return 993322;
-        ";
+        struct Tests {
+            input: String,
+            expected_value: String,
+        }
 
-        let lexer = Lexer::new(input);
-        let mut parser = Parser::new(lexer);
-
-        let program = parser.parse_program();
-        check_parser_errors(&mut parser);
-
-        if let Some(program) = program {
-            if program.statments.len() != 3 {
-                panic!(
-                    "program.statments doesn't contain 3 statments, got={}",
-                    program.statments.len()
-                )
-            }
-
-            let expected_identifier = ["x", "y", "foobar"];
-
-            let mut program_iter = program.statments.iter();
-
-            for _ in expected_identifier {
-                if let Some(node) = program_iter.next() {
-                    match &node {
-                        Nodes::Statement(stmts) => {
-                            match stmts {
-                                Statements::Return { token, .. } => {
-                                    if stmts.token_litteral() != "return" {
-                                        panic!(
-                                            "token_litteral() not 'return', got={}",
-                                            stmts.token_litteral()
-                                        );
-                                    }
-                                }
-                                n => panic!("Expected ReturnStatement, got={}", n.display_type()),
-                            }
-                            // TODO: Check the expression as well
-                        }
-                        n => {
-                            panic!("Expected Statement, got={}", n)
-                        }
-                    }
-                } else {
-                    break;
+        impl Tests {
+            fn new<T>(input: T, expected_value: T) -> Self
+            where
+                T: Into<String>,
+            {
+                Self {
+                    input: input.into(),
+                    expected_value: expected_value.into(),
                 }
             }
-        } else {
-            panic!("parse_program() return null")
+        }
+
+        let inputs = vec![Tests::new("return 5;", "5"), Tests::new("return 10;", "10")];
+
+        for input in inputs.iter() {
+            let lexer = Lexer::new(&input.input);
+            let mut parser = Parser::new(lexer);
+
+            let program = parser.parse_program();
+            check_parser_errors(&mut parser);
+
+            if let Some(program) = program {
+                match &program.statments[0] {
+                    Nodes::Statement(stmt) => match stmt {
+                        Statements::Return { token, value } => {
+                            if stmt.token_litteral() != "return" {
+                                panic!(
+                                    "token_litteral() not 'return', got={}",
+                                    stmt.token_litteral()
+                                );
+                            }
+                            h_test_litteral_expression(value, input.expected_value.clone());
+                        }
+                        _ => panic!("Expected Return Statement, got={}", stmt.display_type()),
+                    },
+                    _ => panic!("Expected Statement, got={}", program.statments[0]),
+                }
+            }
         }
     }
-
-    // EXPRESSIONS
 
     #[test]
     fn test_identifier() {

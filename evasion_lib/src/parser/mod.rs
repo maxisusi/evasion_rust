@@ -376,21 +376,17 @@ impl Parser {
 
     fn parse_return_statement(&mut self) -> Option<Statements> {
         let stmt_tok = self.cur_token.clone();
+        self.next_token();
 
-        // TODO: Skipping expression until we encounter
-        // a semicolon
+        let value = self.parse_expression_stmt(Precedence::Lowest).unwrap();
 
-        while !self.cur_tok_is(TokenTypes::SEMICOLON) {
+        if self.peek_token_is(TokenTypes::SEMICOLON) {
             self.next_token();
         }
 
         let stmt = Statements::Return {
             token: stmt_tok,
-            value: Expressions::Identifier {
-                // Dummy value for now
-                token: Token::new(TokenTypes::ILLEGLAL, ""),
-                value: "".to_string(),
-            },
+            value,
         };
 
         Some(stmt)
