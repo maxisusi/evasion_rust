@@ -1,56 +1,59 @@
 mod tests {
-    use core::panic;
-    use std::{ops::Deref, usize};
-
     use crate::{
         ast::{Expressions, Node, Nodes, Statements},
         lexer::Lexer,
         parser::Parser,
         token,
     };
+    use std::{ops::Deref, usize};
 
     // LET STATMENTS
 
     #[test]
     fn test_let_statments() {
-        let input = "
-            let x = 5;
-            let y = 10;
-            let foobar = 838383;
-        ";
+        struct Tests {
+            input: String,
+            expected_ident: String,
+            expected_value: String,
+        }
 
-        let lexer = Lexer::new(input);
-        let mut parser = Parser::new(lexer);
-
-        let program = parser.parse_program();
-        check_parser_errors(&mut parser);
-
-        if let Some(program) = program {
-            if program.statments.len() != 3 {
-                panic!(
-                    "program.statments doesn't contain 3 statments, got={}",
-                    program.statments.len()
-                )
-            }
-
-            let expected_identifier = ["x", "y", "foobar"];
-
-            let mut program_iter = program.statments.iter();
-
-            for identif in expected_identifier {
-                if let Some(nodes) = program_iter.next() {
-                    match &nodes {
-                        Nodes::Statement(stmt) => {
-                            h_test_let_statments(stmt, identif);
-                        }
-                        n => panic!("Expected Statement but got={}", n),
-                    }
-                } else {
-                    break;
+        impl Tests {
+            fn new<T>(input: T, expected_ident: T, expected_value: T) -> Self
+            where
+                T: Into<String>,
+            {
+                Self {
+                    input: input.into(),
+                    expected_value: expected_value.into(),
+                    expected_ident: expected_ident.into(),
                 }
             }
-        } else {
-            panic!("parse_program() return null")
+        }
+
+        let inputs = vec![
+            Tests::new("let x = 5;", "x", "5"),
+            Tests::new("let y = 10;", "y", "10"),
+            Tests::new("let foobar = 838383", "foobar", "838383"),
+        ];
+        for input in inputs.iter() {
+            let lexer = Lexer::new(&input.input);
+            let mut parser = Parser::new(lexer);
+
+            let program = parser.parse_program();
+            check_parser_errors(&mut parser);
+
+            if let Some(program) = program {
+                match &program.statments[0] {
+                    Nodes::Statement(stmt) => match stmt {
+                        Statements::Let { token, name, value } => {
+                            h_test_let_statments(stmt, input.expected_ident.as_str());
+                            h_test_litteral_expression(value, input.expected_value.clone());
+                        }
+                        _ => panic!("Expected Let Statement, got={}", stmt.display_type()),
+                    },
+                    _ => panic!("Expected Statement, got={}", program.statments[0]),
+                }
+            }
         }
     }
     fn h_test_let_statments(stmt: &Statements, ident: &str) {
@@ -64,7 +67,7 @@ mod tests {
                     panic!("Identifier.value is not={} got={}", ident, name);
                 }
 
-                if name.token_litteral() != ident {
+                if name.token_litteral() != ident.trim() {
                     panic!(
                         "Identifier.name.token_litteral() is not={} got={}",
                         ident, name
@@ -792,7 +795,7 @@ mod tests {
                     panic!("token_litteral() not '5', got={}", exp.token_litteral());
                 }
             }
-            _ => panic!("was exprecting IntegerLiteral, got={}", exp),
+            _ => panic!("was exprecting IntegerLiteral, got={}", exp.display_type()),
         };
     }
 }

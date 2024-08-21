@@ -411,22 +411,18 @@ impl Parser {
         if !self.expect_peek(TokenTypes::ASSIGN) {
             return None;
         }
+        self.next_token();
 
-        // TODO: Skipping expression until we encounter
-        // a semicolon
+        let value = self.parse_expression_stmt(Precedence::Lowest).unwrap();
 
-        while !self.cur_tok_is(TokenTypes::SEMICOLON) {
-            self.next_token()
+        if self.peek_token_is(TokenTypes::SEMICOLON) {
+            self.next_token();
         }
 
         let stmt = Statements::Let {
             token: stmt_tok.clone(),
             name: identifier,
-            value: Expressions::Identifier {
-                // Dummy value for now.
-                token: Token::new(TokenTypes::ILLEGLAL, ""),
-                value: "".to_string(),
-            },
+            value,
         };
 
         Some(stmt)
