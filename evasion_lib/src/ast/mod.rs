@@ -117,14 +117,10 @@ impl Node for Statements {
 impl Display for Statements {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Statements::Return { token, .. } => write!(f, "{}", token.litteral),
-            Statements::Let { token, name, value } => write!(
-                f,
-                "{} {} = {};",
-                token.litteral,
-                name,
-                value.token_litteral()
-            ),
+            Statements::Return { token, value } => write!(f, "{} {}", token.litteral, value),
+            Statements::Let { token, name, value } => {
+                write!(f, "{} {} = {};", token.litteral, name, value)
+            }
             Statements::BlockStatements {
                 token: _token,
                 statements,

@@ -3,5 +3,5 @@ mod ast;
 pub mod lexer;
 
 #[allow(unused)]
-mod parser;
+pub mod parser;
 pub mod token;

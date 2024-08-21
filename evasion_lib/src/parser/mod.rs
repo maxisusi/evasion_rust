@@ -8,7 +8,7 @@ use crate::{
     token::{Token, TokenTypes},
 };
 
-struct Parser {
+pub struct Parser {
     lexer: Lexer,
     cur_token: Token,
     peek_token: Token,
@@ -44,7 +44,7 @@ impl From<TokenTypes> for Precedence {
 }
 
 impl Parser {
-    fn new(lexer: Lexer) -> Box<Self> {
+    pub fn new(lexer: Lexer) -> Box<Self> {
         let mut p = Self {
             lexer,
             cur_token: Token::new(TokenTypes::ILLEGLAL, ""),
@@ -63,7 +63,7 @@ impl Parser {
     // * Entry Point
     // ------------------------
 
-    fn parse_program(&mut self) -> Option<Program> {
+    pub fn parse_program(&mut self) -> Option<Program> {
         let mut program = Program {
             statments: Vec::new(),
         };
