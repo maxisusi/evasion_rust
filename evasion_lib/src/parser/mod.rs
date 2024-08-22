@@ -63,7 +63,7 @@ impl Parser {
     // * Entry Point
     // ------------------------
 
-    pub fn parse_program(&mut self) -> Option<Program> {
+    pub fn parse_program(&mut self) -> Program {
         let mut program = Program {
             statments: Vec::new(),
         };
@@ -75,7 +75,7 @@ impl Parser {
             }
             self.next_token();
         }
-        Some(program)
+        program
     }
 
     fn parse_statement(&mut self) -> Option<Nodes> {
