@@ -33,7 +33,7 @@ mod tests {
             Tests::new("let y = 10;", "y", "10"),
             Tests::new("let foobar = 838383", "foobar", "838383"),
         ];
-        for input in inputs.iter() {
+        for input in inputs {
             let lexer = Lexer::new(&input.input);
             let mut parser = Parser::new(lexer);
 
@@ -108,7 +108,7 @@ mod tests {
 
         let inputs = vec![Tests::new("return 5;", "5"), Tests::new("return 10;", "10")];
 
-        for input in inputs.iter() {
+        for input in inputs {
             let lexer = Lexer::new(&input.input);
             let mut parser = Parser::new(lexer);
 
@@ -202,7 +202,7 @@ mod tests {
             PrefixTest::new("!false", "!", "false"),
         ];
 
-        for test in tests.iter() {
+        for test in tests {
             let lexer = Lexer::new(test.input.as_str());
             let mut parser = Parser::new(lexer);
 
@@ -277,7 +277,7 @@ mod tests {
             InfixTests::new("true == false;", "true", "==", "false"),
         ];
 
-        for test in tests.iter() {
+        for test in tests {
             let lexer = Lexer::new(test.input.as_str());
             let mut parser = Parser::new(lexer);
 
@@ -386,7 +386,7 @@ mod tests {
             ),
         ];
 
-        for test in tests.iter() {
+        for test in tests {
             let lexer = Lexer::new(test.input.as_str());
             let mut parser = Parser::new(lexer);
 
@@ -605,7 +605,7 @@ mod tests {
             ),
         ];
 
-        for test in tests.iter() {
+        for test in tests {
             let lexer = Lexer::new(&test.input);
             let mut parser = Parser::new(lexer);
 
