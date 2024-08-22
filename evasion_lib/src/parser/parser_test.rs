@@ -41,15 +41,13 @@ mod tests {
             check_parser_errors(&mut parser);
 
             if let Some(program) = program {
-                match &program.statments[0] {
-                    Nodes::Statement(stmt) => match stmt {
-                        Statements::Let { token, name, value } => {
-                            h_test_let_statments(stmt, input.expected_ident.as_str());
-                            h_test_litteral_expression(value, input.expected_value.clone());
-                        }
-                        _ => panic!("Expected Let Statement, got={}", stmt.display_type()),
-                    },
-                    _ => panic!("Expected Statement, got={}", program.statments[0]),
+                let statement: &Statements = &program.statments[0].clone().try_into().unwrap();
+                match statement {
+                    Statements::Let { token, name, value } => {
+                        h_test_let_statments(statement, input.expected_ident.as_str());
+                        h_test_litteral_expression(value, input.expected_value.clone());
+                    }
+                    _ => panic!("Expected Let Statement, got={}", statement.display_type()),
                 }
             }
         }
@@ -120,20 +118,21 @@ mod tests {
             check_parser_errors(&mut parser);
 
             if let Some(program) = program {
-                match &program.statments[0] {
-                    Nodes::Statement(stmt) => match stmt {
-                        Statements::Return { token, value } => {
-                            if stmt.token_litteral() != "return" {
-                                panic!(
-                                    "token_litteral() not 'return', got={}",
-                                    stmt.token_litteral()
-                                );
-                            }
-                            h_test_litteral_expression(value, input.expected_value.clone());
+                let statement: &Statements = &program.statments[0].clone().try_into().unwrap();
+                match statement {
+                    Statements::Return { token, value } => {
+                        if statement.token_litteral() != "return" {
+                            panic!(
+                                "token_litteral() not 'return', got={}",
+                                statement.token_litteral()
+                            );
                         }
-                        _ => panic!("Expected Return Statement, got={}", stmt.display_type()),
-                    },
-                    _ => panic!("Expected Statement, got={}", program.statments[0]),
+                        h_test_litteral_expression(value, input.expected_value.clone());
+                    }
+                    _ => panic!(
+                        "Expected Return Statement, got={}",
+                        statement.display_type()
+                    ),
                 }
             }
         }
@@ -156,13 +155,8 @@ mod tests {
                     program.statments.len()
                 )
             }
-
-            let node = &program.statments[0];
-
-            match node {
-                Nodes::Expression(stmt) => h_test_identifier(stmt, "foobar".to_string()),
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+            let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
+            h_test_identifier(expression, "foobar".to_string());
         }
     }
 
@@ -184,13 +178,8 @@ mod tests {
                 )
             }
 
-            let stmt = &program.statments[0];
-
-            match stmt {
-                Nodes::Expression(stmt) => h_test_litteral_expression(stmt, "5".to_string()),
-
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+            let expression = &program.statments[0].clone().try_into().unwrap();
+            h_test_litteral_expression(expression, "5".to_string())
         }
     }
 
@@ -229,36 +218,34 @@ mod tests {
             check_parser_errors(&mut parser);
 
             if let Some(stmt) = program {
-                let stmt = &stmt.statments[0];
+                let expression: &Expressions = &stmt.statments[0].clone().try_into().unwrap();
 
-                match stmt {
-                    Nodes::Expression(stmt) => match stmt {
-                        Expressions::Prefix {
-                            token: _token,
-                            right,
-                            operator,
-                        } => {
-                            let right = right.deref();
+                match expression {
+                    Expressions::Prefix {
+                        token: _token,
+                        right,
+                        operator,
+                    } => {
+                        let right = right.deref();
 
-                            if let Some(operhand) = test.operhand.parse::<u64>().ok() {
-                                h_test_interger(right, operhand);
+                        if let Some(operhand) = test.operhand.parse::<u64>().ok() {
+                            h_test_interger(right, operhand);
+                        } else {
+                            if let Some(operhand) = test.operhand.parse::<bool>().ok() {
+                                h_test_boolean(right, operhand);
                             } else {
-                                if let Some(operhand) = test.operhand.parse::<bool>().ok() {
-                                    h_test_boolean(right, operhand);
-                                } else {
-                                    panic!("Couldn't convert value to u64 nor boolean");
-                                }
-                            }
-                            if *operator != test.operator {
-                                panic!("Expected {}, got={}", test.operator, operator);
+                                panic!("Couldn't convert value to u64 nor boolean");
                             }
                         }
-                        _ => {
-                            panic!("Expected Prefix Expression, got={}", stmt.display_type())
+                        if *operator != test.operator {
+                            panic!("Expected {}, got={}", test.operator, operator);
                         }
-                    },
+                    }
                     _ => {
-                        panic!("Expected an expression, got={}", stmt)
+                        panic!(
+                            "Expected Prefix Expression, got={}",
+                            expression.display_type()
+                        )
                     }
                 }
             }
@@ -308,21 +295,19 @@ mod tests {
             check_parser_errors(&mut parser);
 
             if let Some(stmt) = program {
-                let stmt = &stmt.statments[0];
+                let expression: &Expressions = &stmt.statments[0].clone().try_into().unwrap();
 
-                match stmt {
-                    Nodes::Expression(stmt) => match stmt {
-                        Expressions::Infix { .. } => h_test_infix_expression(
-                            stmt,
-                            test.left.clone(),
-                            test.op.clone(),
-                            test.right.clone(),
-                        ),
-                        _ => {}
-                    },
-                    _ => {
-                        panic!("Expected an expression, got={}", stmt)
-                    }
+                match expression {
+                    Expressions::Infix { .. } => h_test_infix_expression(
+                        expression,
+                        test.left.clone(),
+                        test.op.clone(),
+                        test.right.clone(),
+                    ),
+                    _ => panic!(
+                        "Expected Infix Expression, got={}",
+                        expression.display_type()
+                    ),
                 }
             }
         }
@@ -361,11 +346,11 @@ mod tests {
 
     #[test]
     fn test_precedence() {
-        struct Tests {
+        struct PrecedenceTest {
             input: String,
             expected: String,
         }
-        impl Tests {
+        impl PrecedenceTest {
             fn new<T>(input: T, expected: T) -> Self
             where
                 T: Into<String>,
@@ -378,36 +363,36 @@ mod tests {
         }
 
         let tests = vec![
-            Tests::new("-a * b", "((-a) * b)"),
-            Tests::new("!-a", "(!(-a))"),
-            Tests::new("a + b + c", "((a + b) + c)"),
-            Tests::new("a + b - c", "((a + b) - c)"),
-            Tests::new("a * b * c", "((a * b) * c)"),
-            Tests::new("a * b / c", "((a * b) / c)"),
-            Tests::new("a + b / c", "(a + (b / c))"),
-            Tests::new("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
-            Tests::new("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
-            Tests::new("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
-            Tests::new("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
-            Tests::new(
+            PrecedenceTest::new("-a * b", "((-a) * b)"),
+            PrecedenceTest::new("!-a", "(!(-a))"),
+            PrecedenceTest::new("a + b + c", "((a + b) + c)"),
+            PrecedenceTest::new("a + b - c", "((a + b) - c)"),
+            PrecedenceTest::new("a * b * c", "((a * b) * c)"),
+            PrecedenceTest::new("a * b / c", "((a * b) / c)"),
+            PrecedenceTest::new("a + b / c", "(a + (b / c))"),
+            PrecedenceTest::new("a + b * c + d / e - f", "(((a + (b * c)) + (d / e)) - f)"),
+            PrecedenceTest::new("3 + 4; -5 * 5", "(3 + 4)((-5) * 5)"),
+            PrecedenceTest::new("5 > 4 == 3 < 4", "((5 > 4) == (3 < 4))"),
+            PrecedenceTest::new("5 < 4 != 3 > 4", "((5 < 4) != (3 > 4))"),
+            PrecedenceTest::new(
                 "3 + 4 * 5 == 3 * 1 + 4 * 5",
                 "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))",
             ),
-            Tests::new("true", "true"),
-            Tests::new("false", "false"),
-            Tests::new("3 > 5 == false", "((3 > 5) == false)"),
-            Tests::new("3 < 5 == true", "((3 < 5) == true)"),
-            Tests::new("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
-            Tests::new("(5 + 5) * 2", "((5 + 5) * 2)"),
-            Tests::new("2 / (5 + 5)", "(2 / (5 + 5))"),
-            Tests::new("-(5 + 5)", "(-(5 + 5))"),
-            Tests::new("!(true == true)", "(!(true == true))"),
-            Tests::new("a + add(b * c) + d", "((a + add((b * c))) + d)"),
-            Tests::new(
+            PrecedenceTest::new("true", "true"),
+            PrecedenceTest::new("false", "false"),
+            PrecedenceTest::new("3 > 5 == false", "((3 > 5) == false)"),
+            PrecedenceTest::new("3 < 5 == true", "((3 < 5) == true)"),
+            PrecedenceTest::new("1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"),
+            PrecedenceTest::new("(5 + 5) * 2", "((5 + 5) * 2)"),
+            PrecedenceTest::new("2 / (5 + 5)", "(2 / (5 + 5))"),
+            PrecedenceTest::new("-(5 + 5)", "(-(5 + 5))"),
+            PrecedenceTest::new("!(true == true)", "(!(true == true))"),
+            PrecedenceTest::new("a + add(b * c) + d", "((a + add((b * c))) + d)"),
+            PrecedenceTest::new(
                 "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
                 "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))",
             ),
-            Tests::new(
+            PrecedenceTest::new(
                 "add(a + b + c * d / f + g)",
                 "add((((a + b) + ((c * d) / f)) + g))",
             ),
@@ -446,47 +431,45 @@ mod tests {
                 )
             }
 
-            let stmt = &program.statments[0];
+            let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
 
-            match stmt {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::IfExpression {
-                        token,
-                        alternative,
-                        consequence,
+            match expression {
+                Expressions::IfExpression {
+                    token,
+                    alternative,
+                    consequence,
+                    condition,
+                } => {
+                    // Testing conditions
+                    h_test_infix_expression(
                         condition,
-                    } => {
-                        // Testing conditions
-                        h_test_infix_expression(
-                            condition,
-                            "x".to_string(),
-                            ">".to_string(),
-                            "y".to_string(),
-                        );
+                        "x".to_string(),
+                        ">".to_string(),
+                        "y".to_string(),
+                    );
 
-                        // Testing consequence Block Statement
-                        let consequence = match consequence.deref() {
-                            Statements::BlockStatements { token, statements } => {
-                                match &statements[0] {
-                                    Nodes::Expression(e) => {
-                                        h_test_identifier(&e, "x".to_string());
-                                    }
-                                    _ => panic!("Expected an Expession, got={}", statements[0]),
-                                }
+                    // Testing consequence Block Statement
+                    let consequence = match consequence.deref() {
+                        Statements::BlockStatements { token, statements } => match &statements[0] {
+                            Nodes::Expression(e) => {
+                                h_test_identifier(&e, "x".to_string());
                             }
-                            _ => panic!("Expected to find a BlockStatements, got={}", consequence),
-                        };
+                            _ => panic!("Expected an Expession, got={}", statements[0]),
+                        },
+                        _ => panic!("Expected to find a BlockStatements, got={}", consequence),
+                    };
 
-                        // Check if there is no alternative
-                        if let Some(alt) = alternative {
-                            panic!("Should not have an alternatice statement")
-                        }
+                    // Check if there is no alternative
+                    if let Some(alt) = alternative {
+                        panic!("Should not have an alternatice statement")
                     }
+                }
 
-                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
-                },
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+                _ => panic!(
+                    "was exprecting IntegerLiteral, got={}",
+                    expression.display_type()
+                ),
+            }
         }
     }
 
@@ -508,57 +491,55 @@ mod tests {
                 )
             }
 
-            let stmt = &program.statments[0];
+            let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
 
-            match stmt {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::IfExpression {
-                        token,
-                        alternative,
-                        consequence,
+            match expression {
+                Expressions::IfExpression {
+                    token,
+                    alternative,
+                    consequence,
+                    condition,
+                } => {
+                    // Testing conditions
+                    h_test_infix_expression(
                         condition,
-                    } => {
-                        // Testing conditions
-                        h_test_infix_expression(
-                            condition,
-                            "x".to_string(),
-                            ">".to_string(),
-                            "y".to_string(),
-                        );
+                        "x".to_string(),
+                        ">".to_string(),
+                        "y".to_string(),
+                    );
 
-                        // Testing consequence Block Statement
-                        let consequence = match consequence.deref() {
+                    // Testing consequence Block Statement
+                    let consequence = match consequence.deref() {
+                        Statements::BlockStatements { token, statements } => match &statements[0] {
+                            Nodes::Expression(e) => {
+                                h_test_identifier(&e, "x".to_string());
+                            }
+                            _ => panic!("Expected an Expession, got={}", statements[0]),
+                        },
+                        _ => panic!("Expected to find a BlockStatements, got={}", consequence),
+                    };
+
+                    // Check if there is no alternative
+                    if let Some(alt) = alternative {
+                        match alt.deref() {
                             Statements::BlockStatements { token, statements } => {
                                 match &statements[0] {
                                     Nodes::Expression(e) => {
-                                        h_test_identifier(&e, "x".to_string());
+                                        h_test_identifier(&e, "y".to_string());
                                     }
                                     _ => panic!("Expected an Expession, got={}", statements[0]),
                                 }
                             }
-                            _ => panic!("Expected to find a BlockStatements, got={}", consequence),
+                            _ => panic!("Expected to find a BlockStatements, got={}", alt),
                         };
-
-                        // Check if there is no alternative
-                        if let Some(alt) = alternative {
-                            match alt.deref() {
-                                Statements::BlockStatements { token, statements } => {
-                                    match &statements[0] {
-                                        Nodes::Expression(e) => {
-                                            h_test_identifier(&e, "y".to_string());
-                                        }
-                                        _ => panic!("Expected an Expession, got={}", statements[0]),
-                                    }
-                                }
-                                _ => panic!("Expected to find a BlockStatements, got={}", alt),
-                            };
-                        }
                     }
+                }
 
-                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
-                },
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+                _ => panic!(
+                    "was exprecting IntegerLiteral, got={}",
+                    expression.display_type()
+                ),
+            }
         }
     }
 
@@ -580,57 +561,52 @@ mod tests {
                 )
             }
 
-            let stmt = &program.statments[0];
+            let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
 
-            match stmt {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::FnExpression {
-                        token,
-                        body,
-                        parameters,
-                    } => {
-                        if stmt.token_litteral() != "fn" {
-                            panic!(
-                                "Was expecting fn as token litteral, got={}",
-                                stmt.token_litteral()
-                            );
-                        }
-
-                        h_test_identifier(&parameters[0], "x".to_string());
-                        h_test_identifier(&parameters[1], "y".to_string());
-
-                        // Testing consequence Block Statement
-                        let body = match body.deref() {
-                            Statements::BlockStatements { token, statements } => {
-                                match &statements[0] {
-                                    Nodes::Expression(e) => h_test_infix_expression(
-                                        e,
-                                        "x".to_string(),
-                                        "+".to_string(),
-                                        "y".to_string(),
-                                    ),
-                                    _ => panic!("Expected an Expession, got={}", statements[0]),
-                                }
-                            }
-                            _ => panic!("Expected to find a BlockStatements, got={}", body),
-                        };
+            match expression {
+                Expressions::FnExpression {
+                    token,
+                    body,
+                    parameters,
+                } => {
+                    if expression.token_litteral() != "fn" {
+                        panic!(
+                            "Was expecting fn as token litteral, got={}",
+                            expression.token_litteral()
+                        );
                     }
 
-                    n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
-                },
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+                    h_test_identifier(&parameters[0], "x".to_string());
+                    h_test_identifier(&parameters[1], "y".to_string());
+
+                    // Testing consequence Block Statement
+                    let body = match body.deref() {
+                        Statements::BlockStatements { token, statements } => match &statements[0] {
+                            Nodes::Expression(e) => h_test_infix_expression(
+                                e,
+                                "x".to_string(),
+                                "+".to_string(),
+                                "y".to_string(),
+                            ),
+                            _ => panic!("Expected an Expession, got={}", statements[0]),
+                        },
+                        _ => panic!("Expected to find a BlockStatements, got={}", body),
+                    };
+                }
+
+                n => panic!("was exprecting IntegerLiteral, got={}", n.display_type()),
+            }
         }
     }
 
     #[test]
     fn test_fn_parameter() {
-        struct Tests {
+        struct FnParamsTest {
             input: String,
             expected: Vec<String>,
         }
 
-        impl Tests {
+        impl FnParamsTest {
             fn new<T>(input: T, expected: Vec<String>) -> Self
             where
                 T: Into<String>,
@@ -642,10 +618,10 @@ mod tests {
             }
         }
 
-        let tests: Vec<Tests> = vec![
-            Tests::new("fn() {}", vec![]),
-            Tests::new("fn(x) {}", vec!["x".to_string()]),
-            Tests::new(
+        let tests: Vec<FnParamsTest> = vec![
+            FnParamsTest::new("fn() {}", vec![]),
+            FnParamsTest::new("fn(x) {}", vec!["x".to_string()]),
+            FnParamsTest::new(
                 "fn(x, y, z) {}",
                 vec!["x".to_string(), "y".to_string(), "z".to_string()],
             ),
@@ -659,22 +635,23 @@ mod tests {
             check_parser_errors(&mut parser);
 
             if let Some(program) = program {
-                let stmt = &program.statments[0];
-                match stmt {
-                    Nodes::Expression(stmt) => match stmt {
-                        Expressions::FnExpression {
-                            token,
-                            body,
-                            parameters,
-                        } => {
-                            for (idx, expected_param) in test.expected.iter().enumerate() {
-                                h_test_identifier(&parameters[idx], expected_param.to_string());
-                            }
+                let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
+
+                match expression {
+                    Expressions::FnExpression {
+                        token,
+                        body,
+                        parameters,
+                    } => {
+                        for (idx, expected_param) in test.expected.iter().enumerate() {
+                            h_test_identifier(&parameters[idx], expected_param.to_string());
                         }
-                        n => panic!("was exprecting FnExpression, got={}", n.display_type()),
-                    },
-                    n => panic!("was exprecting Expression, got={}", n),
-                };
+                    }
+                    _ => panic!(
+                        "was exprecting FnExpression, got={}",
+                        expression.display_type()
+                    ),
+                }
             }
         }
     }
@@ -697,38 +674,35 @@ mod tests {
                 )
             }
 
-            let stmt = &program.statments[0];
+            let expression: &Expressions = &program.statments[0].clone().try_into().unwrap();
 
-            match stmt {
-                Nodes::Expression(stmt) => match stmt {
-                    Expressions::CallExpression {
-                        token,
-                        function,
-                        arguments,
-                    } => {
-                        h_test_identifier(&function, "add".to_string());
+            match expression {
+                Expressions::CallExpression {
+                    token,
+                    function,
+                    arguments,
+                } => {
+                    h_test_identifier(&function, "add".to_string());
 
-                        if arguments.len() != 3 {
-                            panic!("Expected 3 arguments, got={}", arguments.len())
-                        }
-                        h_test_litteral_expression(&arguments[0], "1".to_string());
-                        h_test_infix_expression(
-                            &arguments[1],
-                            "2".to_string(),
-                            "*".to_string(),
-                            "3".to_string(),
-                        );
-                        h_test_infix_expression(
-                            &arguments[2],
-                            "4".to_string(),
-                            "+".to_string(),
-                            "5".to_string(),
-                        )
+                    if arguments.len() != 3 {
+                        panic!("Expected 3 arguments, got={}", arguments.len())
                     }
-                    n => panic!("was exprecting CallExpression, got={}", n.display_type()),
-                },
-                n => panic!("was exprecting Expression, got={}", n),
-            };
+                    h_test_litteral_expression(&arguments[0], "1".to_string());
+                    h_test_infix_expression(
+                        &arguments[1],
+                        "2".to_string(),
+                        "*".to_string(),
+                        "3".to_string(),
+                    );
+                    h_test_infix_expression(
+                        &arguments[2],
+                        "4".to_string(),
+                        "+".to_string(),
+                        "5".to_string(),
+                    )
+                }
+                n => panic!("was exprecting CallExpression, got={}", n.display_type()),
+            }
         }
     }
 

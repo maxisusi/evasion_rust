@@ -97,6 +97,17 @@ pub enum Statements {
     },
 }
 
+impl TryFrom<Nodes> for Statements {
+    type Error = &'static str;
+
+    fn try_from(node: Nodes) -> Result<Self, Self::Error> {
+        match node {
+            Nodes::Statement(stmt) => Ok(stmt),
+            _ => Err("Cannot convert to Statement"),
+        }
+    }
+}
+
 impl Node for Statements {
     fn token_litteral(&self) -> &str {
         match self {
@@ -184,6 +195,17 @@ pub enum Expressions {
         function: Box<Expressions>,
         arguments: Vec<Expressions>,
     },
+}
+
+impl TryFrom<Nodes> for Expressions {
+    type Error = &'static str;
+
+    fn try_from(node: Nodes) -> Result<Self, Self::Error> {
+        match node {
+            Nodes::Expression(stmt) => Ok(stmt),
+            _ => Err("Cannot convert to Expression"),
+        }
+    }
 }
 
 impl Node for Expressions {
