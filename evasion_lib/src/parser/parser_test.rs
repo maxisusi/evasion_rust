@@ -9,13 +9,13 @@ mod tests {
 
     #[test]
     fn test_let_statments() {
-        struct Tests {
+        struct LetStmtTest {
             input: String,
             expected_ident: String,
             expected_value: String,
         }
 
-        impl Tests {
+        impl LetStmtTest {
             fn new<T>(input: T, expected_ident: T, expected_value: T) -> Self
             where
                 T: Into<String>,
@@ -29,9 +29,9 @@ mod tests {
         }
 
         let inputs = vec![
-            Tests::new("let x = 5;", "x", "5"),
-            Tests::new("let y = 10;", "y", "10"),
-            Tests::new("let foobar = 838383", "foobar", "838383"),
+            LetStmtTest::new("let x = 5;", "x", "5"),
+            LetStmtTest::new("let y = 10;", "y", "10"),
+            LetStmtTest::new("let foobar = 838383", "foobar", "838383"),
         ];
         for input in inputs {
             let lexer = Lexer::new(&input.input);
@@ -89,12 +89,12 @@ mod tests {
 
     #[test]
     fn test_return_statements() {
-        struct Tests {
+        struct RetStmtTest {
             input: String,
             expected_value: String,
         }
 
-        impl Tests {
+        impl RetStmtTest {
             fn new<T>(input: T, expected_value: T) -> Self
             where
                 T: Into<String>,
@@ -106,7 +106,10 @@ mod tests {
             }
         }
 
-        let inputs = vec![Tests::new("return 5;", "5"), Tests::new("return 10;", "10")];
+        let inputs = vec![
+            RetStmtTest::new("return 5;", "5"),
+            RetStmtTest::new("return 10;", "10"),
+        ];
 
         for input in inputs {
             let lexer = Lexer::new(&input.input);
@@ -195,15 +198,15 @@ mod tests {
             }
         }
 
-        let tests = vec![
+        let inputs = vec![
             PrefixTest::new("!5", "!", "5"),
             PrefixTest::new("-15", "-", "15"),
             PrefixTest::new("!true", "!", "true"),
             PrefixTest::new("!false", "!", "false"),
         ];
 
-        for test in tests {
-            let lexer = Lexer::new(test.input.as_str());
+        for input in inputs {
+            let lexer = Lexer::new(input.input.as_str());
             let mut parser = Parser::new(lexer);
 
             let program = parser.parse_program();
@@ -219,17 +222,17 @@ mod tests {
                 } => {
                     let right = right.deref();
 
-                    if let Some(operhand) = test.operhand.parse::<u64>().ok() {
+                    if let Some(operhand) = input.operhand.parse::<u64>().ok() {
                         h_test_interger(right, operhand);
                     } else {
-                        if let Some(operhand) = test.operhand.parse::<bool>().ok() {
+                        if let Some(operhand) = input.operhand.parse::<bool>().ok() {
                             h_test_boolean(right, operhand);
                         } else {
                             panic!("Couldn't convert value to u64 nor boolean");
                         }
                     }
-                    if *operator != test.operator {
-                        panic!("Expected {}, got={}", test.operator, operator);
+                    if *operator != input.operator {
+                        panic!("Expected {}, got={}", input.operator, operator);
                     }
                 }
                 _ => {
@@ -263,7 +266,7 @@ mod tests {
                 }
             }
         }
-        let tests = vec![
+        let inputs = vec![
             InfixTests::new("5 + 4;", "5", "+", "4"),
             InfixTests::new("5 - 5;", "5", "-", "5"),
             InfixTests::new("5 * 5;", "5", "*", "5"),
@@ -277,8 +280,8 @@ mod tests {
             InfixTests::new("true == false;", "true", "==", "false"),
         ];
 
-        for test in tests {
-            let lexer = Lexer::new(test.input.as_str());
+        for input in inputs {
+            let lexer = Lexer::new(input.input.as_str());
             let mut parser = Parser::new(lexer);
 
             let program = parser.parse_program();
@@ -289,9 +292,9 @@ mod tests {
             match expression {
                 Expressions::Infix { .. } => h_test_infix_expression(
                     expression,
-                    test.left.clone(),
-                    test.op.clone(),
-                    test.right.clone(),
+                    input.left.clone(),
+                    input.op.clone(),
+                    input.right.clone(),
                 ),
                 _ => panic!(
                     "Expected Infix Expression, got={}",
@@ -350,7 +353,7 @@ mod tests {
             }
         }
 
-        let tests = vec![
+        let inputs = vec![
             PrecedenceTest::new("-a * b", "((-a) * b)"),
             PrecedenceTest::new("!-a", "(!(-a))"),
             PrecedenceTest::new("a + b + c", "((a + b) + c)"),
@@ -386,15 +389,15 @@ mod tests {
             ),
         ];
 
-        for test in tests {
-            let lexer = Lexer::new(test.input.as_str());
+        for input in inputs {
+            let lexer = Lexer::new(input.input.as_str());
             let mut parser = Parser::new(lexer);
 
             let program = parser.parse_program();
             check_parser_errors(&mut parser);
 
-            if test.expected != program.to_string() {
-                panic!("Expected {}, got={}", test.expected, program.to_string())
+            if input.expected != program.to_string() {
+                panic!("Expected {}, got={}", input.expected, program.to_string())
             }
         }
     }
