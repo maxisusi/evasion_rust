@@ -44,7 +44,7 @@ mod tests {
             match statement {
                 Statements::Let { token, name, value } => {
                     h_test_let_statments(statement, input.expected_ident.as_str());
-                    h_test_litteral_expression(value, input.expected_value.clone());
+                    h_test_integer_litteral(value, input.expected_value.clone());
                 }
                 _ => panic!("Expected Let Statement, got={}", statement.display_type()),
             }
@@ -127,7 +127,7 @@ mod tests {
                             statement.token_litteral()
                         );
                     }
-                    h_test_litteral_expression(value, input.expected_value.clone());
+                    h_test_integer_litteral(value, input.expected_value.clone());
                 }
                 _ => panic!(
                     "Expected Return Statement, got={}",
@@ -175,7 +175,7 @@ mod tests {
         }
 
         let expression = &program.statments[0].clone().try_into().unwrap();
-        h_test_litteral_expression(expression, "5".to_string())
+        h_test_integer_litteral(expression, "5".to_string())
     }
 
     #[test]
@@ -223,7 +223,7 @@ mod tests {
                     let right = right.deref();
 
                     if let Some(operhand) = input.operhand.parse::<u64>().ok() {
-                        h_test_interger(right, operhand);
+                        h_test_integer_litteral(right, input.operhand.parse().unwrap());
                     } else {
                         if let Some(operhand) = input.operhand.parse::<bool>().ok() {
                             h_test_boolean(right, operhand);
@@ -317,9 +317,9 @@ mod tests {
                 operator,
                 right,
             } => {
-                if let Some(t_left) = t_left.parse::<u64>().ok() {
-                    h_test_interger(&left, t_left);
-                    h_test_interger(&right, t_right.parse().unwrap());
+                if let Some(t_left_p) = t_left.parse::<u64>().ok() {
+                    h_test_integer_litteral(&left, t_left);
+                    h_test_integer_litteral(&right, t_right);
                 } else {
                     if let Some(t_left) = t_left.parse::<bool>().ok() {
                         h_test_boolean(&left, t_left);
@@ -665,7 +665,7 @@ mod tests {
                 if arguments.len() != 3 {
                     panic!("Expected 3 arguments, got={}", arguments.len())
                 }
-                h_test_litteral_expression(&arguments[0], "1".to_string());
+                h_test_integer_litteral(&arguments[0], "1".to_string());
                 h_test_infix_expression(
                     &arguments[1],
                     "2".to_string(),
@@ -683,35 +683,24 @@ mod tests {
         }
     }
 
-    fn h_test_interger(expression: &Expressions, exp: u64) {
-        match expression {
-            Expressions::IntegerLiteral { token, value } => {
-                if *value != exp {
-                    panic!("Was expecting {}, got={}", exp, value)
-                }
-            }
-            _ => panic!("Was expecting integer litteral, got={}", expression),
-        }
-    }
-
-    fn h_test_boolean(expression: &Expressions, exp: bool) {
+    fn h_test_boolean(expression: &Expressions, expected_bool: bool) {
         match expression {
             Expressions::Boolean { token, value } => {
-                if *value != exp {
-                    panic!("Was expecting {}, got={}", value, exp)
+                if *value != expected_bool {
+                    panic!("Was expecting {}, got={}", value, expected_bool)
                 }
             }
             _ => panic!("Was expecting integer litteral, got={}", expression),
         }
     }
 
-    fn h_test_identifier(expression: &Expressions, expected: String) {
+    fn h_test_identifier(expression: &Expressions, expected_identifier: String) {
         match expression {
             Expressions::Identifier { .. } => {
-                if expression.token_litteral() != expected {
+                if expression.token_litteral() != expected_identifier {
                     panic!(
                         "token_litteral() not '{}', got={}",
-                        expected,
+                        expected_identifier,
                         expression.token_litteral()
                     );
                 }
@@ -723,14 +712,20 @@ mod tests {
         }
     }
 
-    fn h_test_litteral_expression(exp: &Expressions, expected: String) {
-        return match exp {
+    fn h_test_integer_litteral(expression: &Expressions, expected_integer: String) {
+        return match expression {
             Expressions::IntegerLiteral { .. } => {
-                if exp.token_litteral() != expected {
-                    panic!("token_litteral() not '5', got={}", exp.token_litteral());
+                if expression.token_litteral() != expected_integer {
+                    panic!(
+                        "token_litteral() not '5', got={}",
+                        expression.token_litteral()
+                    );
                 }
             }
-            _ => panic!("was exprecting IntegerLiteral, got={}", exp.display_type()),
+            _ => panic!(
+                "was exprecting IntegerLiteral, got={}",
+                expression.display_type()
+            ),
         };
     }
 }
