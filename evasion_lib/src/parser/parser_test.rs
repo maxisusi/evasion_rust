@@ -496,24 +496,21 @@ mod tests {
 
                 // Testing consequence Block Statement
                 let consequence = match consequence.deref() {
-                    Statements::BlockStatements { token, statements } => match &statements[0] {
-                        Nodes::Expression(e) => {
-                            h_test_identifier(&e, "x".to_string());
-                        }
-                        _ => panic!("Expected an Expession, got={}", statements[0]),
-                    },
+                    Statements::BlockStatements { token, statements } => {
+                        let expression: &Expressions = &statements[0].clone().try_into().unwrap();
+                        h_test_identifier(&expression, "x".to_string());
+                    }
                     _ => panic!("Expected to find a BlockStatements, got={}", consequence),
                 };
 
                 // Check if there is no alternative
                 if let Some(alt) = alternative {
                     match alt.deref() {
-                        Statements::BlockStatements { token, statements } => match &statements[0] {
-                            Nodes::Expression(e) => {
-                                h_test_identifier(&e, "y".to_string());
-                            }
-                            _ => panic!("Expected an Expession, got={}", statements[0]),
-                        },
+                        Statements::BlockStatements { token, statements } => {
+                            let expression: &Expressions =
+                                &statements[0].clone().try_into().unwrap();
+                            h_test_identifier(&expression, "y".to_string());
+                        }
                         _ => panic!("Expected to find a BlockStatements, got={}", alt),
                     };
                 }
@@ -563,15 +560,15 @@ mod tests {
 
                 // Testing consequence Block Statement
                 let body = match body.deref() {
-                    Statements::BlockStatements { token, statements } => match &statements[0] {
-                        Nodes::Expression(e) => h_test_infix_expression(
-                            e,
+                    Statements::BlockStatements { token, statements } => {
+                        let expression: &Expressions = &statements[0].clone().try_into().unwrap();
+                        h_test_infix_expression(
+                            expression,
                             "x".to_string(),
                             "+".to_string(),
                             "y".to_string(),
-                        ),
-                        _ => panic!("Expected an Expession, got={}", statements[0]),
-                    },
+                        );
+                    }
                     _ => panic!("Expected to find a BlockStatements, got={}", body),
                 };
             }
