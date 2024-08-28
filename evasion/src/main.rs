@@ -24,9 +24,7 @@ fn print_parser() {
         let mut parser = Parser::new(lexer);
 
         let program = parser.parse_program();
-        if let Some(program) = program {
-            println!("{}", program);
-        }
+        println!("{}", program);
     }
 }
 
