@@ -1,5 +1,8 @@
 #[allow(unused)]
 mod ast;
+
+#[allow(unused)]
+mod bytecode;
 pub mod lexer;
 
 #[allow(unused)]
