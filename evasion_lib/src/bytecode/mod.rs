@@ -2,6 +2,8 @@ use std::{fmt::Display, ops::Deref, usize};
 
 mod bytecode_test;
 
+pub type Instruction = Vec<u8>;
+
 #[repr(u8)]
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Instructions {
@@ -60,7 +62,7 @@ impl Definition {
     }
 }
 
-pub fn make<const T: usize>(opcode: &Instructions, operands: [u16; T]) -> Option<Vec<u8>> {
+pub fn make<const T: usize>(opcode: &Instructions, operands: [u16; T]) -> Option<Instruction> {
     let defintion = Definition::lookup(opcode);
 
     if let Some(definition) = defintion {
