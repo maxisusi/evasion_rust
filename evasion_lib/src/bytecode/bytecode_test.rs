@@ -11,11 +11,11 @@ mod tests {
     fn test_make() {
         struct Test<const T: usize, const U: usize> {
             opcode: bytecode::Instructions,
-            operand: [u16; T],
+            operand: [usize; T],
             expected: [u8; U],
         }
         impl<const T: usize, const U: usize> Test<T, U> {
-            fn new(opcode: bytecode::Instructions, operand: [u16; T], expected: [u8; U]) -> Self {
+            fn new(opcode: bytecode::Instructions, operand: [usize; T], expected: [u8; U]) -> Self {
                 Test {
                     opcode,
                     operand,
@@ -81,14 +81,14 @@ mod tests {
     }
 
     #[test]
-    fn test_operand() {
+    fn test_read_operhands() {
         struct Test<const T: usize> {
             opcode: bytecode::Instructions,
-            operand: [u16; T],
+            operand: [usize; T],
             bytes_read: usize,
         }
         impl<const T: usize> Test<T> {
-            fn new(opcode: bytecode::Instructions, operand: [u16; T], bytes_read: usize) -> Self {
+            fn new(opcode: bytecode::Instructions, operand: [usize; T], bytes_read: usize) -> Self {
                 Test {
                     opcode,
                     operand,
@@ -104,13 +104,21 @@ mod tests {
 
             if let Some(def) = definition {
                 // We remove the operator from the instruction in order to extract the operhands
-                let (read, length) = bytecode::read_operator(&def, &instruction.0[1..]);
+                let (read, length) = bytecode::read_operhands(&def, &instruction.0[1..]);
 
                 if length != test.bytes_read {
                     panic!(
                         "wrong length of bytes read\nwant={}, got={}",
                         test.bytes_read, length
                     )
+                }
+                for (idx, op) in test.operand.iter().enumerate() {
+                    if read[idx] != test.operand[idx] {
+                        panic!(
+                            "wrong operand read at index={}\nwant={}, got={}",
+                            idx, test.operand[idx], read[idx]
+                        )
+                    }
                 }
             } else {
                 panic!("Definition not found")

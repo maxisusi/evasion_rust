@@ -81,7 +81,7 @@ impl Definition {
     }
 }
 
-pub fn make<const T: usize>(opcode: &Instructions, operands: &[u16; T]) -> Option<Instruction> {
+pub fn make<const T: usize>(opcode: &Instructions, operands: &[usize; T]) -> Option<Instruction> {
     let defintion = Definition::lookup(opcode);
 
     if let Some(definition) = defintion {
@@ -100,9 +100,10 @@ pub fn make<const T: usize>(opcode: &Instructions, operands: &[u16; T]) -> Optio
 
             match witdh {
                 2 => {
-                    let op = operand.to_be_bytes();
+                    // Get the last two bytes
+                    let op = &operand.to_be_bytes()[std::mem::size_of::<usize>() - 2..];
                     for byte in op.into_iter() {
-                        instruction.push(byte);
+                        instruction.push(*byte);
                     }
                 }
                 _ => todo!(),
@@ -115,7 +116,7 @@ pub fn make<const T: usize>(opcode: &Instructions, operands: &[u16; T]) -> Optio
     }
 }
 
-pub fn read_operator(definition: &Definition, instruction: &[u8]) -> (Vec<usize>, usize) {
+pub fn read_operhands(definition: &Definition, instruction: &[u8]) -> (Vec<usize>, usize) {
     let mut operhand: Vec<usize> = Vec::with_capacity(definition.operands_width.len());
     let mut offset = 0;
 
