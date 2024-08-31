@@ -7,7 +7,6 @@ mod tests {
 
     #[test]
     fn test_make() {
-        #[derive(PartialEq)]
         struct Test<const T: usize, const U: usize> {
             opcode: Instructions,
             operand: [u16; T],
@@ -31,19 +30,19 @@ mod tests {
             let instruction = make(&test.opcode, test.operand);
 
             if let Some(instruction) = instruction {
-                if instruction.len() != test.expected.len() {
+                if instruction.0.len() != test.expected.len() {
                     panic!(
                         "Expectect instruction length of {}, got={}",
                         test.expected.len(),
-                        instruction.len()
+                        instruction.0.len()
                     )
                 }
 
                 for (idx, bit) in test.expected.iter().enumerate() {
-                    if instruction[idx] != test.expected[idx] {
+                    if instruction.0[idx] != test.expected[idx] {
                         panic!(
                         "Wrong token at positon={} while parsing the instruction, expected={}, got={}",idx,
-                        test.expected[idx], instruction[idx]
+                        test.expected[idx], instruction.0[idx]
                     )
                     }
                 }
@@ -61,20 +60,21 @@ mod tests {
             make(&Instructions::OpConstant, [3]),
         ];
 
-        let expected = "0000 OpConstant 1
-        0003 OpConstant 2
-        0006 OpConstant 65535";
+        let expected = "0000 OpConstant 1\n0003 OpConstant 2\n0006 OpConstant 65535";
 
-        let instr = instructions
-            .into_iter()
-            .map(|f| f.unwrap())
-            .flatten()
-            .collect::<Vec<u8>>();
-        // if instr != expected {
-        //     panic!(
-        //         "Instructions wrongly formatted.\nwant={}, got={}",
-        //         expected, instr
-        //     )
-        // }
+        let instr = Instruction(
+            instructions
+                .into_iter()
+                .map(|f| f.unwrap().0)
+                .flatten()
+                .collect::<Vec<u8>>(),
+        );
+
+        if instr.to_string() != expected {
+            panic!(
+                "Instructions wrongly formatted.\nwant={}, got={}",
+                expected, instr
+            )
+        }
     }
 }

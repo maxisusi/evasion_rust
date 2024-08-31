@@ -74,16 +74,16 @@ mod tests {
     fn h_test_instruction<const U: usize>(expected: &[Instruction; U], actual: &Instruction) {
         let concatted = concat_instruction(expected);
 
-        if concatted.len() != actual.len() {
+        if concatted.0.len() != actual.0.len() {
             panic!(
                 "Wrong instructions length. want={}, got={}",
-                concatted.len(),
-                actual.len(),
+                concatted.0.len(),
+                actual.0.len(),
             )
         }
 
-        for (idx, ins) in concatted.iter().enumerate() {
-            if actual[idx] != *ins {
+        for (idx, ins) in concatted.0.iter().enumerate() {
+            if actual.0[idx] != *ins {
                 panic!(
                     "Wrong instruction at {}, want={:?}, got={:?}",
                     idx, concatted, actual
@@ -92,7 +92,12 @@ mod tests {
         }
     }
     fn concat_instruction<const U: usize>(instruction: &[Instruction; U]) -> Instruction {
-        instruction.clone().into_iter().flatten().collect()
+        instruction
+            .clone()
+            .into_iter()
+            .map(|i| i.0)
+            .flatten()
+            .collect()
     }
 
     fn h_test_constant<const T: usize>(expected: &[&str; T], actual: &Vec<ObjectType>) {

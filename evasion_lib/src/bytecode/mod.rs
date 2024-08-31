@@ -2,7 +2,26 @@ use std::{fmt::Display, ops::Deref, usize};
 
 mod bytecode_test;
 
-pub type Instruction = Vec<u8>;
+#[derive(Clone, Debug)]
+pub struct Instruction(pub Vec<u8>);
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "bite")
+    }
+}
+
+impl FromIterator<u8> for Instruction {
+    fn from_iter<T: IntoIterator<Item = u8>>(iter: T) -> Self {
+        let mut item = Vec::new();
+
+        for bit in iter {
+            item.push(bit)
+        }
+
+        Instruction(item)
+    }
+}
 
 #[repr(u8)]
 #[derive(PartialEq, Debug, Clone, Copy)]
@@ -90,7 +109,7 @@ pub fn make<const T: usize>(opcode: &Instructions, operands: [u16; T]) -> Option
             }
             offset += witdh;
         }
-        Some(instruction)
+        Some(Instruction(instruction))
     } else {
         None
     }
