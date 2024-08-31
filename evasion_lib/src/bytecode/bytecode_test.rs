@@ -59,10 +59,10 @@ mod tests {
         let mut instructions = vec![
             bytecode::make(&bytecode::Instructions::OpConstant, &[1]),
             bytecode::make(&bytecode::Instructions::OpConstant, &[2]),
-            bytecode::make(&bytecode::Instructions::OpConstant, &[3]),
+            bytecode::make(&bytecode::Instructions::OpConstant, &[65535]),
         ];
 
-        let expected = "0000 OpConstant 1\n0003 OpConstant 2\n0006 OpConstant 65535";
+        let expected = "0000 OpConstant 1\n0003 OpConstant 2\n0006 OpConstant 65535\n";
 
         let instr = bytecode::Instruction(
             instructions
@@ -74,7 +74,7 @@ mod tests {
 
         if instr.to_string() != expected {
             panic!(
-                "Instructions wrongly formatted.\nwant={}, got={}",
+                "Instructions wrongly formatted.\nwant={}\ngot={}",
                 expected, instr
             )
         }

@@ -1,3 +1,4 @@
+use core::panic;
 use std::{fmt::Display, ops::Deref, usize};
 
 mod bytecode_test;
@@ -7,7 +8,34 @@ pub struct Instruction(pub Vec<u8>);
 
 impl Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "bite")
+        let mut index = 0;
+
+        while index < self.0.len() {
+            let definition = Definition::lookup(&self.0[index].into());
+
+            if let Some(def) = &definition {
+                let operhand = &self.0[index + 1..];
+
+                let (read_op, length_op) = read_operhands(def, operhand);
+
+                write!(f, "{:04} ", index); // Print index
+
+                let count_op = def.operands_width.len();
+                if operhand.len() != operhand.len() {
+                    panic!("Error, operan len doesn't match defined {}", count_op);
+                }
+
+                match count_op {
+                    1 => write!(f, "{} {}\n", def.name, read_op[0]),
+                    _ => panic!("Error, unhandled operhand count {}", def.name),
+                };
+
+                index += 1 + length_op
+            } else {
+                panic!("Couldn't find definition")
+            }
+        }
+        Ok(())
     }
 }
 
@@ -75,7 +103,9 @@ impl Definition {
     pub fn lookup(opcode: &Instructions) -> Option<Self> {
         let opcode = opcode.clone().into();
         match opcode {
-            0 => Some(Definition::new("OpCode", [2])),
+            Instructions::OpConstant => {
+                Some(Definition::new(Instructions::OpConstant.to_string(), [2]))
+            }
             _ => None,
         }
     }
