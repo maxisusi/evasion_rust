@@ -3,17 +3,19 @@ mod tests {
     use core::panic;
     use std::usize;
 
-    use crate::bytecode::{make, Instruction, Instructions};
+    use lazy_static::initialize;
+
+    use crate::bytecode::{self, make, Definition};
 
     #[test]
     fn test_make() {
         struct Test<const T: usize, const U: usize> {
-            opcode: Instructions,
+            opcode: bytecode::Instructions,
             operand: [u16; T],
             expected: [u8; U],
         }
         impl<const T: usize, const U: usize> Test<T, U> {
-            fn new(opcode: Instructions, operand: [u16; T], expected: [u8; U]) -> Self {
+            fn new(opcode: bytecode::Instructions, operand: [u16; T], expected: [u8; U]) -> Self {
                 Test {
                     opcode,
                     operand,
@@ -22,12 +24,12 @@ mod tests {
             }
         }
         let tests = vec![Test::new(
-            Instructions::OpConstant,
+            bytecode::Instructions::OpConstant,
             [65534],
-            [Instructions::OpConstant.into(), 255, 254],
+            [bytecode::Instructions::OpConstant.into(), 255, 254],
         )];
         for test in tests {
-            let instruction = make(&test.opcode, test.operand);
+            let instruction = bytecode::make(&test.opcode, &test.operand);
 
             if let Some(instruction) = instruction {
                 if instruction.0.len() != test.expected.len() {
@@ -55,14 +57,14 @@ mod tests {
     #[test]
     fn test_instruction_string() {
         let mut instructions = vec![
-            make(&Instructions::OpConstant, [1]),
-            make(&Instructions::OpConstant, [2]),
-            make(&Instructions::OpConstant, [3]),
+            bytecode::make(&bytecode::Instructions::OpConstant, &[1]),
+            bytecode::make(&bytecode::Instructions::OpConstant, &[2]),
+            bytecode::make(&bytecode::Instructions::OpConstant, &[3]),
         ];
 
         let expected = "0000 OpConstant 1\n0003 OpConstant 2\n0006 OpConstant 65535";
 
-        let instr = Instruction(
+        let instr = bytecode::Instruction(
             instructions
                 .into_iter()
                 .map(|f| f.unwrap().0)
@@ -75,6 +77,44 @@ mod tests {
                 "Instructions wrongly formatted.\nwant={}, got={}",
                 expected, instr
             )
+        }
+    }
+
+    #[test]
+    fn test_operand() {
+        struct Test<const T: usize> {
+            opcode: bytecode::Instructions,
+            operand: [u16; T],
+            bytes_read: usize,
+        }
+        impl<const T: usize> Test<T> {
+            fn new(opcode: bytecode::Instructions, operand: [u16; T], bytes_read: usize) -> Self {
+                Test {
+                    opcode,
+                    operand,
+                    bytes_read,
+                }
+            }
+        }
+        let tests = vec![Test::new(bytecode::Instructions::OpConstant, [65534], 2)];
+
+        for test in tests {
+            let instruction = make(&test.opcode, &test.operand).unwrap();
+            let definition = bytecode::Definition::lookup(&test.opcode);
+
+            if let Some(def) = definition {
+                // We remove the operator from the instruction in order to extract the operhands
+                let (read, length) = bytecode::read_operator(&def, &instruction.0[1..]);
+
+                if length != test.bytes_read {
+                    panic!(
+                        "wrong length of bytes read\nwant={}, got={}",
+                        test.bytes_read, length
+                    )
+                }
+            } else {
+                panic!("Definition not found")
+            }
         }
     }
 }

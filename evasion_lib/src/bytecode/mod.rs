@@ -54,7 +54,7 @@ impl Into<u8> for Instructions {
     }
 }
 
-struct Definition {
+pub struct Definition {
     name: String,
     operands_width: Vec<u8>,
 }
@@ -72,7 +72,7 @@ impl Definition {
 }
 
 impl Definition {
-    fn lookup(opcode: &Instructions) -> Option<Self> {
+    pub fn lookup(opcode: &Instructions) -> Option<Self> {
         let opcode = opcode.clone().into();
         match opcode {
             0 => Some(Definition::new("OpCode", [2])),
@@ -81,7 +81,7 @@ impl Definition {
     }
 }
 
-pub fn make<const T: usize>(opcode: &Instructions, operands: [u16; T]) -> Option<Instruction> {
+pub fn make<const T: usize>(opcode: &Instructions, operands: &[u16; T]) -> Option<Instruction> {
     let defintion = Definition::lookup(opcode);
 
     if let Some(definition) = defintion {
@@ -113,4 +113,24 @@ pub fn make<const T: usize>(opcode: &Instructions, operands: [u16; T]) -> Option
     } else {
         None
     }
+}
+
+pub fn read_operator(definition: &Definition, instruction: &[u8]) -> (Vec<usize>, usize) {
+    let mut operhand: Vec<usize> = Vec::with_capacity(definition.operands_width.len());
+    let mut offset = 0;
+
+    for (idx, width) in definition.operands_width.iter().enumerate() {
+        match width {
+            2 => {
+                let instruction = &instruction[offset..];
+                let op = u16::from_be_bytes([instruction[0], instruction[1]]) as usize;
+                operhand.push(op);
+            }
+            _ => todo!(),
+        }
+
+        offset += (*width as usize);
+    }
+
+    (operhand, offset)
 }

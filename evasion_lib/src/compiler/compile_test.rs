@@ -42,8 +42,8 @@ mod tests {
             "1 + 2",
             ["1", "2"],
             [
-                make(&Instructions::OpConstant, [1]).unwrap(),
-                make(&Instructions::OpConstant, [2]).unwrap(),
+                make(&Instructions::OpConstant, &[1]).unwrap(),
+                make(&Instructions::OpConstant, &[2]).unwrap(),
             ],
         )];
 
