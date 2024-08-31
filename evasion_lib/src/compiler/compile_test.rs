@@ -60,8 +60,7 @@ mod tests {
                     Ok(..) => {
                         let bytecode = compiler.bytecode();
                         h_test_instruction(&test.expected_instructions, &bytecode.instruction);
-
-                        test_constant(&test.expected_constant, &bytecode.constant);
+                        h_test_constant(&test.expected_constant, &bytecode.constant);
                     }
                     Err(..) => {
                         panic!("Compile error: ");
@@ -96,7 +95,7 @@ mod tests {
         instruction.clone().into_iter().flatten().collect()
     }
 
-    fn test_constant<const T: usize>(expected: &[&str; T], actual: &Vec<ObjectType>) {
+    fn h_test_constant<const T: usize>(expected: &[&str; T], actual: &Vec<ObjectType>) {
         if expected.len() != actual.len() {
             panic!(
                 "Wrong number of constants. got={}, want={}",
@@ -107,12 +106,12 @@ mod tests {
 
         for (idx, constant) in expected.into_iter().enumerate() {
             if let Ok(res) = constant.parse::<usize>() {
-                test_integer_object(res, actual[idx])
+                h_test_integer_object(res, actual[idx])
             }
         }
     }
 
-    fn test_integer_object(value: usize, actual: ObjectType) {
+    fn h_test_integer_object(value: usize, actual: ObjectType) {
         match actual {
             ObjectType::Integer(integer_value) => {
                 if integer_value != value {

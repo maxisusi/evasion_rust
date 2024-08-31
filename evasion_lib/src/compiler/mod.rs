@@ -24,7 +24,7 @@ impl Compiler {
     }
 
     fn compile(&mut self, nodes: Vec<Nodes>) -> Result<(), ()> {
-        todo!()
+        Err(())
     }
 
     fn bytecode(&self) -> Bytecode {

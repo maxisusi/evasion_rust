@@ -3,7 +3,7 @@ mod tests {
     use core::panic;
     use std::usize;
 
-    use crate::bytecode::{make, Instructions};
+    use crate::bytecode::{make, Instruction, Instructions};
 
     #[test]
     fn test_make() {
@@ -51,5 +51,30 @@ mod tests {
                 panic!("Couldn't find an instruction for opcode={}", test.opcode)
             }
         }
+    }
+
+    #[test]
+    fn test_instruction_string() {
+        let mut instructions = vec![
+            make(&Instructions::OpConstant, [1]),
+            make(&Instructions::OpConstant, [2]),
+            make(&Instructions::OpConstant, [3]),
+        ];
+
+        let expected = "0000 OpConstant 1
+        0003 OpConstant 2
+        0006 OpConstant 65535";
+
+        let instr = instructions
+            .into_iter()
+            .map(|f| f.unwrap())
+            .flatten()
+            .collect::<Vec<u8>>();
+        // if instr != expected {
+        //     panic!(
+        //         "Instructions wrongly formatted.\nwant={}, got={}",
+        //         expected, instr
+        //     )
+        // }
     }
 }
