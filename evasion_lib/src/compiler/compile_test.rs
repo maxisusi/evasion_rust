@@ -42,8 +42,8 @@ mod tests {
             "1 + 2",
             ["1", "2"],
             [
+                make(&Instructions::OpConstant, &[0]).unwrap(),
                 make(&Instructions::OpConstant, &[1]).unwrap(),
-                make(&Instructions::OpConstant, &[2]).unwrap(),
             ],
         )];
 
@@ -56,11 +56,11 @@ mod tests {
 
                 let mut compiler = Compiler::new();
 
-                match compiler.compile(program.statments) {
+                match compiler.compile_program(program.statments) {
                     Ok(..) => {
                         let bytecode = compiler.bytecode();
-                        h_test_instruction(&test.expected_instructions, &bytecode.instruction);
-                        h_test_constant(&test.expected_constant, &bytecode.constant);
+                        h_test_instruction(&test.expected_instructions, bytecode.instruction);
+                        h_test_constant(&test.expected_constant, bytecode.constant);
                     }
                     Err(..) => {
                         panic!("Compile error: ");
@@ -76,7 +76,7 @@ mod tests {
 
         if concatted.0.len() != actual.0.len() {
             panic!(
-                "Wrong instructions length. want={}, got={}",
+                "Wrong instructions length.\nwant={}\ngot={}",
                 concatted.0.len(),
                 actual.0.len(),
             )
@@ -85,7 +85,7 @@ mod tests {
         for (idx, ins) in concatted.0.iter().enumerate() {
             if actual.0[idx] != *ins {
                 panic!(
-                    "Wrong instruction at {}, want={:?}, got={:?}",
+                    "Wrong instruction at {}.\nwant={}\ngot={}",
                     idx, concatted, actual
                 )
             }

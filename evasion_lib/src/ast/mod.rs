@@ -162,7 +162,7 @@ pub enum Expressions {
 
     IntegerLiteral {
         token: Token,
-        value: u64,
+        value: usize,
     },
     Infix {
         token: Token,

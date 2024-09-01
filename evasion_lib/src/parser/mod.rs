@@ -1,6 +1,7 @@
 mod parser_test;
 
 use core::panic;
+use std::usize;
 
 use crate::{
     ast::{Expressions, Nodes, Program, Statements},
@@ -324,7 +325,7 @@ impl Parser {
     }
 
     fn parse_integer_litteral(&self) -> Expressions {
-        let number = if let Ok(num) = self.cur_token.clone().litteral.parse::<u64>() {
+        let number = if let Ok(num) = self.cur_token.clone().litteral.parse::<usize>() {
             num
         } else {
             panic!("Couldn't parse integer value to u64");
