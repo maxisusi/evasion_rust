@@ -45,6 +45,9 @@ impl<'a> VirtualMachine<'a> {
                     }
                     ip += 1;
                 }
+                Instructions::OpAdd => {
+                    todo!()
+                }
             }
         }
 

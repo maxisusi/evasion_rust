@@ -55,12 +55,14 @@ impl FromIterator<u8> for Instruction {
 #[derive(PartialEq, Debug, Clone, Copy)]
 pub enum Instructions {
     OpConstant,
+    OpAdd,
 }
 
 impl Display for Instructions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Instructions::OpConstant => write!(f, "OpConstant"),
+            Instructions::OpAdd => write!(f, "OpAdd"),
         }
     }
 }
@@ -78,6 +80,7 @@ impl Into<u8> for Instructions {
     fn into(self) -> u8 {
         match self {
             Instructions::OpConstant => 0,
+            Instructions::OpAdd => 1,
         }
     }
 }
@@ -106,12 +109,12 @@ impl Definition {
             Instructions::OpConstant => {
                 Some(Definition::new(Instructions::OpConstant.to_string(), [2]))
             }
-            _ => None,
+            Instructions::OpAdd => Some(Definition::new(Instructions::OpAdd.to_string(), [])),
         }
     }
 }
 
-pub fn make<const T: usize>(opcode: &Instructions, operands: &[usize; T]) -> Option<Instruction> {
+pub fn make(opcode: &Instructions, operands: &Vec<usize>) -> Option<Instruction> {
     let defintion = Definition::lookup(opcode);
 
     if let Some(definition) = defintion {

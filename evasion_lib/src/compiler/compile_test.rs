@@ -43,8 +43,8 @@ mod tests {
             "1 + 2",
             ["1", "2"],
             [
-                make(&Instructions::OpConstant, &[0]).unwrap(),
-                make(&Instructions::OpConstant, &[1]).unwrap(),
+                make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                make(&Instructions::OpConstant, &vec![1]).unwrap(),
             ],
         )];
 

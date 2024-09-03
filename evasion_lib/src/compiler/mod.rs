@@ -47,7 +47,10 @@ impl Compiler {
                 crate::ast::Expressions::IntegerLiteral { token, value } => {
                     let integer_object = object::ObjectType::Integer(value);
                     let idx_in_constant_pool = &[self.add_constant(integer_object)];
-                    self.emit(bytecode::Instructions::OpConstant, idx_in_constant_pool);
+                    self.emit(
+                        bytecode::Instructions::OpConstant,
+                        idx_in_constant_pool.to_vec(),
+                    );
                     Some(())
                 }
                 _ => todo!(),
@@ -63,12 +66,12 @@ impl Compiler {
         self.constant.len() - 1 // Returns the index from the constant pool
     }
 
-    fn emit<const T: usize>(
+    fn emit(
         &mut self,
         opcode: bytecode::Instructions,
-        op_index_from_obj_pool: &[usize; T],
+        op_index_from_obj_pool: Vec<usize>,
     ) -> usize {
-        let instruction = bytecode::make(&opcode, op_index_from_obj_pool).unwrap();
+        let instruction = bytecode::make(&opcode, &op_index_from_obj_pool).unwrap();
         let pos = self.add_instruction(instruction);
         return pos;
     }
