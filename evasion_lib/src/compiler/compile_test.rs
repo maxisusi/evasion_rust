@@ -4,6 +4,7 @@ mod tests {
 
     use crate::bytecode::{make, Instruction, Instructions};
 
+    use crate::ast;
     use crate::compiler::Compiler;
     use crate::object::ObjectType;
     use crate::{
@@ -50,9 +51,7 @@ mod tests {
         fn run_compiler_test<const T: usize, const U: usize>(tests: &[Test<T, U>]) {
             for test in tests {
                 // Parsing
-                let lexer = Lexer::new(&test.input);
-                let mut parser = Parser::new(lexer);
-                let program = parser.parse_program();
+                let program = h_parse(&test.input);
 
                 let mut compiler = Compiler::new();
 
@@ -90,6 +89,12 @@ mod tests {
                 )
             }
         }
+    }
+
+    fn h_parse(input: &str) -> ast::Program {
+        let lexer = Lexer::new(input);
+        let mut parser = Parser::new(lexer);
+        parser.parse_program()
     }
     fn concat_instruction<const U: usize>(instruction: &[Instruction; U]) -> Instruction {
         instruction

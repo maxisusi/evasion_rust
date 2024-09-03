@@ -7,25 +7,25 @@ use crate::{
 };
 mod compile_test;
 
-struct Compiler {
+pub struct Compiler {
     instruction: bytecode::Instruction,
     constant: Vec<object::ObjectType>,
 }
 
-struct Bytecode<'a> {
+pub struct Bytecode<'a> {
     instruction: &'a bytecode::Instruction,
     constant: &'a Vec<object::ObjectType>,
 }
 
 impl Compiler {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             instruction: Instruction(Vec::new()),
             constant: Vec::new(),
         }
     }
 
-    fn compile_program(&mut self, nodes: Vec<ast::Nodes>) -> Result<(), ()> {
+    pub fn compile_program(&mut self, nodes: Vec<ast::Nodes>) -> Result<(), ()> {
         for node in nodes {
             if let None = self.compile_node(node) {
                 // Ignoring the null case for now
@@ -82,7 +82,7 @@ impl Compiler {
         pos_new_instruction
     }
 
-    fn bytecode(&self) -> Bytecode {
+    pub fn bytecode(&self) -> Bytecode {
         Bytecode {
             constant: &self.constant,
             instruction: &self.instruction,

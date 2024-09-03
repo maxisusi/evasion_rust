@@ -5,6 +5,9 @@ mod ast;
 mod bytecode;
 
 #[allow(unused)]
+mod vm;
+
+#[allow(unused)]
 mod compiler;
 pub mod lexer;
 
