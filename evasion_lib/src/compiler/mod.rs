@@ -13,8 +13,8 @@ pub struct Compiler {
 }
 
 pub struct Bytecode<'a> {
-    instruction: &'a bytecode::Instruction,
-    constant: &'a Vec<object::ObjectType>,
+    pub instruction: &'a bytecode::Instruction,
+    pub constant: &'a Vec<object::ObjectType>,
 }
 
 impl Compiler {
@@ -45,8 +45,8 @@ impl Compiler {
                     Some(())
                 }
                 crate::ast::Expressions::IntegerLiteral { token, value } => {
-                    let integer_contant = object::ObjectType::Integer(value);
-                    let idx_in_constant_pool = &[self.add_constant(integer_contant)];
+                    let integer_object = object::ObjectType::Integer(value);
+                    let idx_in_constant_pool = &[self.add_constant(integer_object)];
                     self.emit(bytecode::Instructions::OpConstant, idx_in_constant_pool);
                     Some(())
                 }
@@ -66,9 +66,9 @@ impl Compiler {
     fn emit<const T: usize>(
         &mut self,
         opcode: bytecode::Instructions,
-        operhands: &[usize; T],
+        op_index_from_obj_pool: &[usize; T],
     ) -> usize {
-        let instruction = bytecode::make(&opcode, operhands).unwrap();
+        let instruction = bytecode::make(&opcode, op_index_from_obj_pool).unwrap();
         let pos = self.add_instruction(instruction);
         return pos;
     }

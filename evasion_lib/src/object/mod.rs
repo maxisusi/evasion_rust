@@ -5,6 +5,13 @@ pub enum ObjectType {
     Integer(usize),
     Boolean(bool),
     Null,
+    NoOp,
+}
+
+impl Default for ObjectType {
+    fn default() -> Self {
+        ObjectType::NoOp
+    }
 }
 
 impl Display for ObjectType {
@@ -13,6 +20,7 @@ impl Display for ObjectType {
             ObjectType::Integer(value) => write!(f, "{value}"),
             ObjectType::Boolean(value) => write!(f, "{value}"),
             ObjectType::Null => write!(f, ""),
+            ObjectType::NoOp => write!(f, ""),
         }
     }
 }

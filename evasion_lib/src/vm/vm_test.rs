@@ -35,7 +35,8 @@ mod tests {
         let tests = vec![
             Test::new("1", "1"),
             Test::new("2", "2"),
-            Test::new("1 + 2", "2"), //TODO: FIXME
+            Test::new("1 + 2", "2"), //TODO: FIXME, we can only push object to the stack, not
+                                     //compute them...
         ];
 
         for test in tests {
@@ -48,10 +49,10 @@ mod tests {
             let mut vm = VirtualMachine::new(bytecode);
 
             if let Err(err) = vm.run() {
-                panic!("{err}")
+                panic!("An error occured: {err}")
             }
 
-            let stack_top = vm.stack_top();
+            let stack_top = vm.stack_top().unwrap();
         }
     }
 

@@ -154,7 +154,7 @@ pub fn read_operhands(definition: &Definition, instruction: &[u8]) -> (Vec<usize
         match width {
             2 => {
                 let instruction = &instruction[offset..];
-                let op = read_unit16(&Instruction(instruction.into())) as usize;
+                let op = read_unit16(instruction) as usize;
                 operhand.push(op);
             }
             _ => todo!(),
@@ -166,6 +166,6 @@ pub fn read_operhands(definition: &Definition, instruction: &[u8]) -> (Vec<usize
     (operhand, offset)
 }
 
-pub fn read_unit16(instruction: &Instruction) -> u16 {
-    u16::from_be_bytes([instruction.0[0], instruction.0[1]])
+pub fn read_unit16(instruction: &[u8]) -> u16 {
+    u16::from_be_bytes([instruction[0], instruction[1]])
 }
