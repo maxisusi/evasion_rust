@@ -2,7 +2,7 @@ use std::usize;
 
 use crate::{
     ast,
-    bytecode::{self, Instruction},
+    bytecode::{self, Instruction, Instructions},
     object,
 };
 mod compile_test;
@@ -38,9 +38,19 @@ impl Compiler {
     fn compile_node(&mut self, node: ast::Nodes) -> Option<()> {
         match node {
             ast::Nodes::Expression(e) => match e {
-                crate::ast::Expressions::Infix { left, right, .. } => {
+                crate::ast::Expressions::Infix {
+                    left,
+                    right,
+                    operator,
+                    ..
+                } => {
                     let left = self.compile_node(ast::Nodes::from(*left));
                     let right = self.compile_node(ast::Nodes::from(*right));
+
+                    match operator.as_str() {
+                        "+" => self.emit(Instructions::OpAdd, vec![]),
+                        _ => panic!("Unknown operator: {}", operator),
+                    };
 
                     Some(())
                 }

@@ -45,6 +45,7 @@ mod tests {
             [
                 make(&Instructions::OpConstant, &vec![0]).unwrap(),
                 make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                make(&Instructions::OpAdd, &vec![]).unwrap(),
             ],
         )];
 
@@ -76,8 +77,7 @@ mod tests {
         if concatted.0.len() != actual.0.len() {
             panic!(
                 "Wrong instructions length.\nwant={}\ngot={}",
-                concatted.0.len(),
-                actual.0.len(),
+                concatted, actual,
             )
         }
 
@@ -85,7 +85,7 @@ mod tests {
             if actual.0[idx] != *ins {
                 panic!(
                     "Wrong instruction at {}.\nwant={}\ngot={}",
-                    idx, concatted, actual
+                    idx, actual, concatted
                 )
             }
         }
