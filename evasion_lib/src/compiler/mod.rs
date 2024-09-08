@@ -25,14 +25,14 @@ impl Compiler {
         }
     }
 
-    pub fn compile_program(&mut self, nodes: Vec<ast::Nodes>) -> Result<(), ()> {
+    pub fn compile_program(&mut self, nodes: Vec<ast::Nodes>) -> Result<&Self, ()> {
         for node in nodes {
             if let None = self.compile_node(node) {
                 // Ignoring the null case for now
                 // return Err(());
             }
         }
-        Ok(())
+        Ok(self)
     }
 
     fn compile_node(&mut self, node: ast::Nodes) -> Option<()> {

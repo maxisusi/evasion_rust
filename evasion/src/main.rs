@@ -1,17 +1,12 @@
-use evasion_lib::{
-    lexer::Lexer,
-    parser::Parser,
-    token::{Token, TokenTypes},
-};
+use evasion_lib::{compiler, lexer, parser, vm};
 
 use std::io::{stdin, stdout, Write};
 
 fn main() {
-    // print_lexer();
-    print_parser();
+    run();
 }
 
-fn print_parser() {
+fn run() {
     loop {
         print!(">> ");
         stdout().flush().unwrap();
@@ -20,38 +15,24 @@ fn print_parser() {
 
         stdin().read_line(&mut user_input).unwrap();
 
-        let lexer = Lexer::new(&user_input);
-        let mut parser = Parser::new(lexer);
+        let lexer = lexer::Lexer::new(&user_input);
+        let mut parser = parser::Parser::new(lexer);
 
         let program = parser.parse_program();
-        println!("{}", program);
-    }
-}
 
-fn print_lexer() {
-    loop {
-        print!(">> ");
-        stdout().flush().unwrap();
+        let mut compiler = compiler::Compiler::new();
+        let bytecode = compiler
+            .compile_program(program.statments)
+            .unwrap()
+            .bytecode();
 
-        let mut user_input = String::new();
-        let mut tokens: Vec<Token> = Vec::new();
+        let mut vm = vm::VirtualMachine::new(bytecode);
 
-        stdin().read_line(&mut user_input).unwrap();
-        print!("{user_input}");
-
-        let mut lexer = Lexer::new(&user_input);
-
-        loop {
-            let tok = lexer.next_token();
-            if tok.token_type == TokenTypes::EOF {
-                break;
-            } else {
-                tokens.push(tok);
-            }
+        if let Err(err) = vm.run() {
+            panic!("An error occured: {err}")
         }
 
-        for tok in tokens.iter() {
-            println!("{:?}", tok);
-        }
+        let stack_top = vm.stack_top().unwrap();
+        println!("{stack_top}")
     }
 }

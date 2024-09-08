@@ -68,6 +68,7 @@ impl Display for Instructions {
     }
 }
 
+//TODO: Convert into a try_from
 impl From<u8> for Instructions {
     fn from(value: u8) -> Self {
         match value {

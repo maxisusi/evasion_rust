@@ -18,7 +18,7 @@ pub struct VirtualMachine<'a> {
 }
 
 impl<'a> VirtualMachine<'a> {
-    fn new(bytecode_object: compiler::Bytecode<'a>) -> Self {
+    pub fn new(bytecode_object: compiler::Bytecode<'a>) -> Self {
         Self {
             instructions: bytecode_object.instruction,
             constants: bytecode_object.constant,
@@ -27,7 +27,7 @@ impl<'a> VirtualMachine<'a> {
         }
     }
 
-    fn run(&mut self) -> Result<(), &'static str> {
+    pub fn run(&mut self) -> Result<(), &'static str> {
         let mut ip = 0; // Instruction pointer
         while ip < self.instructions.0.len() {
             let op = Instructions::from(self.instructions.0[ip]);
@@ -79,7 +79,7 @@ impl<'a> VirtualMachine<'a> {
         obj
     }
 
-    fn stack_top(&self) -> Option<object::ObjectType> {
+    pub fn stack_top(&self) -> Option<object::ObjectType> {
         if self.sp == 0 {
             return None;
         }
