@@ -170,7 +170,7 @@ pub fn read_operhands(definition: &Definition, instruction: &[u8]) -> (Vec<usize
 
     (operhand, offset)
 }
-
+/** Read two bytes from the given instruction */
 pub fn read_unit16(instruction: &[u8]) -> u16 {
     u16::from_be_bytes([instruction[0], instruction[1]])
 }

@@ -35,8 +35,7 @@ mod tests {
         let tests = vec![
             Test::new("1", "1"),
             Test::new("2", "2"),
-            Test::new("1 + 2", "2"), //TODO: FIXME, we can only push object to the stack, not
-                                     //compute them...
+            Test::new("1 + 2", "3"),
         ];
 
         for test in tests {
@@ -53,6 +52,8 @@ mod tests {
             }
 
             let stack_top = vm.stack_top().unwrap();
+
+            h_test_expected_object(test.expected, stack_top);
         }
     }
 
