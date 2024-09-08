@@ -27,6 +27,7 @@ impl Display for Instruction {
 
                 match count_op {
                     1 => write!(f, "{} {}\n", def.name, read_op[0]),
+                    0 => write!(f, "{}\n", def.name),
                     _ => panic!("Error, unhandled operhand count {}", def.name),
                 };
 
@@ -71,6 +72,7 @@ impl From<u8> for Instructions {
     fn from(value: u8) -> Self {
         match value {
             0 => Instructions::OpConstant,
+            1 => Instructions::OpAdd,
             _ => todo!(),
         }
     }

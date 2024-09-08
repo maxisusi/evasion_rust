@@ -68,12 +68,12 @@ mod tests {
     #[test]
     fn test_instruction_string() {
         let mut instructions = vec![
-            bytecode::make(&bytecode::Instructions::OpConstant, &vec![1]),
+            bytecode::make(&bytecode::Instructions::OpAdd, &vec![]),
             bytecode::make(&bytecode::Instructions::OpConstant, &vec![2]),
             bytecode::make(&bytecode::Instructions::OpConstant, &vec![65535]),
         ];
 
-        let expected = "0000 OpConstant 1\n0003 OpConstant 2\n0006 OpConstant 65535\n";
+        let expected = "0000 OpAdd\n0001 OpConstant 2\n0004 OpConstant 65535\n";
 
         let instr = bytecode::Instruction(
             instructions
