@@ -1,7 +1,7 @@
 use std::usize;
 
 use crate::{
-    ast,
+    ast::{self, Expressions},
     bytecode::{self, Instruction, Instructions},
     object,
 };
@@ -37,37 +37,44 @@ impl Compiler {
 
     fn compile_node(&mut self, node: ast::Nodes) -> Option<()> {
         match node {
-            ast::Nodes::Expression(e) => match e {
-                crate::ast::Expressions::Infix {
-                    left,
-                    right,
-                    operator,
-                    ..
-                } => {
-                    let left = self.compile_node(ast::Nodes::from(*left));
-                    let right = self.compile_node(ast::Nodes::from(*right));
-
-                    match operator.as_str() {
-                        "+" => self.emit(Instructions::OpAdd, vec![]),
-                        _ => panic!("Unknown operator: {}", operator),
-                    };
-
-                    Some(())
+            ast::Nodes::Expression(e) => {
+                if let Some(expr) = self.compile_expression(e) {
+                    self.emit(Instructions::OpPop, vec![]);
                 }
-                crate::ast::Expressions::IntegerLiteral { token, value } => {
-                    let integer_object = object::ObjectType::Integer(value);
-                    let idx_in_constant_pool = &[self.add_constant(integer_object)];
-                    self.emit(
-                        bytecode::Instructions::OpConstant,
-                        idx_in_constant_pool.to_vec(),
-                    );
-                    Some(())
-                }
-                _ => todo!(),
-            },
+                Some(())
+            }
             ast::Nodes::Statement(s) => match s {
                 _ => todo!(),
             },
+        }
+    }
+    fn compile_expression(&mut self, expression: Expressions) -> Option<()> {
+        match expression {
+            crate::ast::Expressions::Infix {
+                left,
+                right,
+                operator,
+                ..
+            } => {
+                let left = self.compile_expression(*left);
+                let right = self.compile_expression(*right);
+
+                match operator.as_str() {
+                    "+" => self.emit(Instructions::OpAdd, vec![]),
+                    _ => panic!("Unknown operator: {}", operator),
+                };
+                Some(())
+            }
+            crate::ast::Expressions::IntegerLiteral { token, value } => {
+                let integer_object = object::ObjectType::Integer(value);
+                let idx_in_constant_pool = &[self.add_constant(integer_object)];
+                self.emit(
+                    bytecode::Instructions::OpConstant,
+                    idx_in_constant_pool.to_vec(),
+                );
+                Some(())
+            }
+            _ => None,
         }
     }
 

@@ -38,6 +38,11 @@ mod tests {
                 vec![],
                 vec![bytecode::Instructions::OpAdd.into()],
             ),
+            Test::new(
+                bytecode::Instructions::OpPop,
+                vec![],
+                vec![bytecode::Instructions::OpPop.into()],
+            ),
         ];
         for test in tests {
             let instruction = bytecode::make(&test.opcode, &test.operand);
@@ -71,9 +76,10 @@ mod tests {
             bytecode::make(&bytecode::Instructions::OpAdd, &vec![]),
             bytecode::make(&bytecode::Instructions::OpConstant, &vec![2]),
             bytecode::make(&bytecode::Instructions::OpConstant, &vec![65535]),
+            bytecode::make(&bytecode::Instructions::OpPop, &vec![]),
         ];
 
-        let expected = "0000 OpAdd\n0001 OpConstant 2\n0004 OpConstant 65535\n";
+        let expected = "0000 OpAdd\n0001 OpConstant 2\n0004 OpConstant 65535\n0007 OpPop\n";
 
         let instr = bytecode::Instruction(
             instructions
