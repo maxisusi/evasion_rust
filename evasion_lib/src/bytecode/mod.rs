@@ -11,7 +11,7 @@ impl Display for Instruction {
         let mut index = 0;
 
         while index < self.0.len() {
-            let definition = Definition::lookup(&self.0[index].into());
+            let definition = Definition::lookup(&self.0[index].try_into().unwrap());
 
             if let Some(def) = &definition {
                 let operhand = &self.0[index + 1..];
@@ -57,6 +57,7 @@ impl FromIterator<u8> for Instruction {
 pub enum Instructions {
     OpConstant,
     OpAdd,
+    OpPop,
 }
 
 impl Display for Instructions {
@@ -64,17 +65,20 @@ impl Display for Instructions {
         match self {
             Instructions::OpConstant => write!(f, "OpConstant"),
             Instructions::OpAdd => write!(f, "OpAdd"),
+            Instructions::OpPop => write!(f, "OpPop"),
         }
     }
 }
 
-//TODO: Convert into a try_from
-impl From<u8> for Instructions {
-    fn from(value: u8) -> Self {
+impl TryFrom<u8> for Instructions {
+    type Error = String;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0 => Instructions::OpConstant,
-            1 => Instructions::OpAdd,
-            _ => todo!(),
+            0 => Ok(Instructions::OpConstant),
+            1 => Ok(Instructions::OpAdd),
+            2 => Ok(Instructions::OpPop),
+            _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
 }
@@ -84,6 +88,7 @@ impl Into<u8> for Instructions {
         match self {
             Instructions::OpConstant => 0,
             Instructions::OpAdd => 1,
+            Instructions::OpPop => 2,
         }
     }
 }
@@ -113,6 +118,7 @@ impl Definition {
                 Some(Definition::new(Instructions::OpConstant.to_string(), [2]))
             }
             Instructions::OpAdd => Some(Definition::new(Instructions::OpAdd.to_string(), [])),
+            Instructions::OpPop => Some(Definition::new(Instructions::OpPop.to_string(), [])),
         }
     }
 }

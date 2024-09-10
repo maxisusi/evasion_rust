@@ -16,40 +16,53 @@ mod tests {
 
     #[test]
     fn test_compiler() {
-        struct Test<'a, const T: usize, const U: usize> {
+        struct Test {
             input: String,
-            expected_constant: [&'a str; T],
-            expected_instructions: [Instruction; U],
+            expected_constant: Vec<String>,
+            expected_instructions: Vec<Instruction>,
         }
 
-        impl<'a, const T: usize, const U: usize> Test<'a, T, U> {
+        impl Test {
             fn new<E>(
                 input: E,
-                expected_constant: [&'a str; T],
-                expected_instructions: [Instruction; U],
+                expected_constant: Vec<E>,
+                expected_instructions: Vec<Instruction>,
             ) -> Self
             where
                 E: Into<String>,
             {
                 Self {
                     input: input.into(),
-                    expected_constant,
+                    expected_constant: expected_constant.into_iter().map(|c| c.into()).collect(),
                     expected_instructions,
                 }
             }
         }
 
-        let tests = [Test::new(
-            "1 + 2",
-            ["1", "2"],
-            [
-                make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                make(&Instructions::OpAdd, &vec![]).unwrap(),
-            ],
-        )];
+        let tests = [
+            Test::new(
+                "1 + 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpAdd, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "1; 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+        ];
 
-        fn run_compiler_test<const T: usize, const U: usize>(tests: &[Test<T, U>]) {
+        fn run_compiler_test(tests: &[Test]) {
             for test in tests {
                 // Parsing
                 let program = h_parse(&test.input);
@@ -71,7 +84,7 @@ mod tests {
         run_compiler_test(&tests)
     }
 
-    fn h_test_instruction<const U: usize>(expected: &[Instruction; U], actual: &Instruction) {
+    fn h_test_instruction(expected: &[Instruction], actual: &Instruction) {
         let concatted = concat_instruction(expected);
 
         if concatted.0.len() != actual.0.len() {
@@ -96,16 +109,15 @@ mod tests {
         let mut parser = Parser::new(lexer);
         parser.parse_program()
     }
-    fn concat_instruction<const U: usize>(instruction: &[Instruction; U]) -> Instruction {
+    fn concat_instruction(instruction: &[Instruction]) -> Instruction {
         instruction
-            .clone()
             .into_iter()
-            .map(|i| i.0)
+            .map(|i| i.0.clone())
             .flatten()
             .collect()
     }
 
-    fn h_test_constant<const T: usize>(expected: &[&str; T], actual: &Vec<ObjectType>) {
+    fn h_test_constant(expected: &Vec<String>, actual: &Vec<ObjectType>) {
         if expected.len() != actual.len() {
             panic!(
                 "Wrong number of constants. got={}, want={}",
