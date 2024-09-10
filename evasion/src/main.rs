@@ -32,7 +32,7 @@ fn run() {
             panic!("An error occured: {err}")
         }
 
-        let stack_top = vm.stack_top().unwrap();
+        let stack_top = vm.last_popped_stack_elem();
         println!("{stack_top}")
     }
 }

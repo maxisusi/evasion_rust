@@ -51,7 +51,7 @@ mod tests {
                 panic!("An error occured: {err}")
             }
 
-            let stack_top = vm.stack_top().unwrap();
+            let stack_top = vm.last_popped_stack_elem();
 
             h_test_expected_object(test.expected, stack_top);
         }

@@ -59,7 +59,7 @@ impl<'a> VirtualMachine<'a> {
                     self.push(result);
                 }
                 Instructions::OpPop => {
-                    todo!()
+                    self.pop();
                 }
             }
 
@@ -89,5 +89,9 @@ impl<'a> VirtualMachine<'a> {
             return None;
         }
         Some(self.stack[self.sp - 1])
+    }
+
+    pub fn last_popped_stack_elem(&self) -> ObjectType {
+        self.stack[self.sp]
     }
 }
