@@ -61,6 +61,9 @@ impl Compiler {
 
                 match operator.as_str() {
                     "+" => self.emit(Instructions::OpAdd, vec![]),
+                    "-" => self.emit(Instructions::OpSub, vec![]),
+                    "*" => self.emit(Instructions::OpMul, vec![]),
+                    "/" => self.emit(Instructions::OpDiv, vec![]),
                     _ => panic!("Unknown operator: {}", operator),
                 };
                 Some(())

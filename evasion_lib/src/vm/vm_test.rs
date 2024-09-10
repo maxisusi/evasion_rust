@@ -36,6 +36,14 @@ mod tests {
             Test::new("1", "1"),
             Test::new("2", "2"),
             Test::new("1 + 2", "3"),
+            Test::new("1 * 2", "2"),
+            Test::new("4 / 2", "2"),
+            Test::new("50 / 2 * 2  + 10 - 5", "55"),
+            Test::new("5 + 5 + 5 + 5 - 10", "10"),
+            Test::new("2 * 2 * 2 * 2 * 2", "32"),
+            Test::new("5 * 2 + 10", "20"),
+            Test::new("5 + 2 * 10", "25"),
+            Test::new("5 * (2 + 10)", "60"),
         ];
 
         for test in tests {

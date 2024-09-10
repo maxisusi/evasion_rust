@@ -58,6 +58,9 @@ pub enum Instructions {
     OpConstant,
     OpAdd,
     OpPop,
+    OpSub,
+    OpMul,
+    OpDiv,
 }
 
 impl Display for Instructions {
@@ -66,6 +69,9 @@ impl Display for Instructions {
             Instructions::OpConstant => write!(f, "OpConstant"),
             Instructions::OpAdd => write!(f, "OpAdd"),
             Instructions::OpPop => write!(f, "OpPop"),
+            Instructions::OpSub => write!(f, "OpSub"),
+            Instructions::OpMul => write!(f, "OpMul"),
+            Instructions::OpDiv => write!(f, "OpDiv"),
         }
     }
 }
@@ -78,6 +84,9 @@ impl TryFrom<u8> for Instructions {
             0 => Ok(Instructions::OpConstant),
             1 => Ok(Instructions::OpAdd),
             2 => Ok(Instructions::OpPop),
+            3 => Ok(Instructions::OpSub),
+            4 => Ok(Instructions::OpMul),
+            5 => Ok(Instructions::OpDiv),
             _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
@@ -89,6 +98,9 @@ impl Into<u8> for Instructions {
             Instructions::OpConstant => 0,
             Instructions::OpAdd => 1,
             Instructions::OpPop => 2,
+            Instructions::OpSub => 3,
+            Instructions::OpMul => 4,
+            Instructions::OpDiv => 5,
         }
     }
 }
@@ -119,6 +131,9 @@ impl Definition {
             }
             Instructions::OpAdd => Some(Definition::new(Instructions::OpAdd.to_string(), [])),
             Instructions::OpPop => Some(Definition::new(Instructions::OpPop.to_string(), [])),
+            Instructions::OpSub => Some(Definition::new(Instructions::OpPop.to_string(), [])),
+            Instructions::OpMul => Some(Definition::new(Instructions::OpPop.to_string(), [])),
+            Instructions::OpDiv => Some(Definition::new(Instructions::OpPop.to_string(), [])),
         }
     }
 }

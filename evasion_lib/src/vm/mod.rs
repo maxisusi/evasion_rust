@@ -45,17 +45,11 @@ impl<'a> VirtualMachine<'a> {
                         );
                     }
                 }
-                Instructions::OpAdd => {
-                    let right = self.pop();
-                    let left = self.pop();
-                    let result = match (right, left) {
-                        (ObjectType::Integer(right), ObjectType::Integer(left)) => {
-                            let result = right + left;
-                            ObjectType::Integer(result)
-                        }
-                        _ => panic!("Add only accepts Integer Object"),
-                    };
-
+                Instructions::OpAdd
+                | Instructions::OpDiv
+                | Instructions::OpMul
+                | Instructions::OpSub => {
+                    let result = self.execute_binary_operation(op);
                     self.push(result);
                 }
                 Instructions::OpPop => {
@@ -67,6 +61,25 @@ impl<'a> VirtualMachine<'a> {
         }
 
         Ok(())
+    }
+
+    fn execute_binary_operation(&mut self, operation: Instructions) -> ObjectType {
+        let right_obj = self.pop();
+        let left_obj = self.pop();
+
+        let integer_result = match (left_obj, right_obj) {
+            (ObjectType::Integer(left), ObjectType::Integer(right)) => (left, right),
+            _ => panic!("Add only accepts Integer Object"),
+        };
+
+        let (left, right) = integer_result;
+        match operation {
+            Instructions::OpAdd => ObjectType::Integer((left + right)),
+            Instructions::OpDiv => ObjectType::Integer((left / right)),
+            Instructions::OpMul => ObjectType::Integer((left * right)),
+            Instructions::OpSub => ObjectType::Integer((left - right)),
+            _ => panic!("Not supported instruction"),
+        }
     }
 
     fn push(&mut self, object: ObjectType) -> Result<(), &'static str> {

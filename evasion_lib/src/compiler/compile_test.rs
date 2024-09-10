@@ -60,6 +60,36 @@ mod tests {
                     make(&Instructions::OpPop, &vec![]).unwrap(),
                 ],
             ),
+            Test::new(
+                "1 - 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpSub, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "1 * 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpMul, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "2 / 1",
+                vec!["2", "1"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpDiv, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {
