@@ -55,6 +55,12 @@ impl<'a> VirtualMachine<'a> {
                 Instructions::OpPop => {
                     self.pop();
                 }
+                Instructions::OpTrue => {
+                    self.push(ObjectType::Boolean(true));
+                }
+                Instructions::OpFalse => {
+                    self.push(ObjectType::Boolean(false));
+                }
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction

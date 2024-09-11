@@ -90,13 +90,28 @@ mod tests {
                     make(&Instructions::OpPop, &vec![]).unwrap(),
                 ],
             ),
+            Test::new(
+                "true",
+                vec!["true"],
+                vec![
+                    make(&Instructions::OpTrue, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "false",
+                vec!["false"],
+                vec![
+                    make(&Instructions::OpFalse, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {
             for test in tests {
                 // Parsing
                 let program = h_parse(&test.input);
-
                 let mut compiler = Compiler::new();
 
                 match compiler.compile_program(program.statments) {

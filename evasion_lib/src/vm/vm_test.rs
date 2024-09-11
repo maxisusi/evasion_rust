@@ -44,6 +44,8 @@ mod tests {
             Test::new("5 * 2 + 10", "20"),
             Test::new("5 + 2 * 10", "25"),
             Test::new("5 * (2 + 10)", "60"),
+            Test::new("true", "true"),
+            Test::new("false", "false"),
         ];
 
         for test in tests {
@@ -73,8 +75,23 @@ mod tests {
         let expected: String = expected.into();
         if let Ok(integer) = expected.parse::<usize>() {
             h_test_integer_object(integer, actual)
+        } else if Ok(true) == expected.parse::<bool>() || Ok(false) == expected.parse::<bool>() {
+            match actual {
+                ObjectType::Boolean(boolean_value) => {
+                    if boolean_value != expected.parse::<bool>().unwrap() {
+                        panic!("Wrong value. got={}, want={}", actual, expected)
+                    }
+                }
+                _ => panic!(
+                    "Unexpected value, expected Boolean Object, got={:?}",
+                    actual
+                ),
+            }
         } else {
-            panic!("Couldn't parse expected value")
+            panic!(
+                "Unexpected value, expected Integer Object or Boolean, got={:?}",
+                actual
+            )
         }
     }
 

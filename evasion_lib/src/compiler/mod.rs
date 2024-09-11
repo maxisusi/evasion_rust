@@ -77,6 +77,18 @@ impl Compiler {
                 );
                 Some(())
             }
+
+            crate::ast::Expressions::Boolean { token, value } => {
+                let boolean_object = object::ObjectType::Boolean(value);
+                let idx_in_constant_pool = &[self.add_constant(boolean_object)];
+
+                if value == true {
+                    self.emit(bytecode::Instructions::OpTrue, vec![]);
+                } else {
+                    self.emit(bytecode::Instructions::OpFalse, vec![]);
+                }
+                Some(())
+            }
             _ => None,
         }
     }

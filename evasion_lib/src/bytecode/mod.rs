@@ -61,6 +61,8 @@ pub enum Instructions {
     OpSub,
     OpMul,
     OpDiv,
+    OpTrue,
+    OpFalse,
 }
 
 impl Display for Instructions {
@@ -72,6 +74,8 @@ impl Display for Instructions {
             Instructions::OpSub => write!(f, "OpSub"),
             Instructions::OpMul => write!(f, "OpMul"),
             Instructions::OpDiv => write!(f, "OpDiv"),
+            Instructions::OpTrue => write!(f, "OpTrue"),
+            Instructions::OpFalse => write!(f, "OpFalse"),
         }
     }
 }
@@ -87,6 +91,8 @@ impl TryFrom<u8> for Instructions {
             3 => Ok(Instructions::OpSub),
             4 => Ok(Instructions::OpMul),
             5 => Ok(Instructions::OpDiv),
+            6 => Ok(Instructions::OpTrue),
+            7 => Ok(Instructions::OpFalse),
             _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
@@ -101,6 +107,8 @@ impl Into<u8> for Instructions {
             Instructions::OpSub => 3,
             Instructions::OpMul => 4,
             Instructions::OpDiv => 5,
+            Instructions::OpTrue => 6,
+            Instructions::OpFalse => 7,
         }
     }
 }
@@ -131,9 +139,11 @@ impl Definition {
             }
             Instructions::OpAdd => Some(Definition::new(Instructions::OpAdd.to_string(), [])),
             Instructions::OpPop => Some(Definition::new(Instructions::OpPop.to_string(), [])),
-            Instructions::OpSub => Some(Definition::new(Instructions::OpPop.to_string(), [])),
-            Instructions::OpMul => Some(Definition::new(Instructions::OpPop.to_string(), [])),
-            Instructions::OpDiv => Some(Definition::new(Instructions::OpPop.to_string(), [])),
+            Instructions::OpSub => Some(Definition::new(Instructions::OpSub.to_string(), [])),
+            Instructions::OpMul => Some(Definition::new(Instructions::OpMul.to_string(), [])),
+            Instructions::OpDiv => Some(Definition::new(Instructions::OpDiv.to_string(), [])),
+            Instructions::OpTrue => Some(Definition::new(Instructions::OpTrue.to_string(), [])),
+            Instructions::OpFalse => Some(Definition::new(Instructions::OpFalse.to_string(), [])),
         }
     }
 }
