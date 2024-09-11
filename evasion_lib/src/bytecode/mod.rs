@@ -63,6 +63,9 @@ pub enum Instructions {
     OpDiv,
     OpTrue,
     OpFalse,
+    OpEqual,
+    OpNotEqual,
+    OpGreaterThan,
 }
 
 impl Display for Instructions {
@@ -76,6 +79,9 @@ impl Display for Instructions {
             Instructions::OpDiv => write!(f, "OpDiv"),
             Instructions::OpTrue => write!(f, "OpTrue"),
             Instructions::OpFalse => write!(f, "OpFalse"),
+            Instructions::OpEqual => write!(f, "OpEqual"),
+            Instructions::OpNotEqual => write!(f, "OpNotEqual"),
+            Instructions::OpGreaterThan => write!(f, "OpGreaterThan"),
         }
     }
 }
@@ -93,6 +99,9 @@ impl TryFrom<u8> for Instructions {
             5 => Ok(Instructions::OpDiv),
             6 => Ok(Instructions::OpTrue),
             7 => Ok(Instructions::OpFalse),
+            8 => Ok(Instructions::OpEqual),
+            9 => Ok(Instructions::OpNotEqual),
+            10 => Ok(Instructions::OpGreaterThan),
             _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
@@ -109,6 +118,9 @@ impl Into<u8> for Instructions {
             Instructions::OpDiv => 5,
             Instructions::OpTrue => 6,
             Instructions::OpFalse => 7,
+            Instructions::OpEqual => 8,
+            Instructions::OpNotEqual => 9,
+            Instructions::OpGreaterThan => 10,
         }
     }
 }
@@ -144,6 +156,13 @@ impl Definition {
             Instructions::OpDiv => Some(Definition::new(Instructions::OpDiv.to_string(), [])),
             Instructions::OpTrue => Some(Definition::new(Instructions::OpTrue.to_string(), [])),
             Instructions::OpFalse => Some(Definition::new(Instructions::OpFalse.to_string(), [])),
+            Instructions::OpEqual => Some(Definition::new(Instructions::OpEqual.to_string(), [])),
+            Instructions::OpGreaterThan => {
+                Some(Definition::new(Instructions::OpGreaterThan.to_string(), []))
+            }
+            Instructions::OpNotEqual => {
+                Some(Definition::new(Instructions::OpNotEqual.to_string(), []))
+            }
         }
     }
 }

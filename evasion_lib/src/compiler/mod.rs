@@ -64,6 +64,9 @@ impl Compiler {
                     "-" => self.emit(Instructions::OpSub, vec![]),
                     "*" => self.emit(Instructions::OpMul, vec![]),
                     "/" => self.emit(Instructions::OpDiv, vec![]),
+                    "==" => self.emit(Instructions::OpEqual, vec![]),
+                    "!=" => self.emit(Instructions::OpNotEqual, vec![]),
+                    "<" | ">" => self.emit(Instructions::OpGreaterThan, vec![]),
                     _ => panic!("Unknown operator: {}", operator),
                 };
                 Some(())

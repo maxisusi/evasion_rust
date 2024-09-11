@@ -106,6 +106,56 @@ mod tests {
                     make(&Instructions::OpPop, &vec![]).unwrap(),
                 ],
             ),
+            Test::new(
+                "1 > 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpGreaterThan, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "1 < 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpGreaterThan, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "1 == 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpEqual, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "1 != 2",
+                vec!["1", "2"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    make(&Instructions::OpNotEqual, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "true == false",
+                vec!["true", "false"],
+                vec![
+                    make(&Instructions::OpTrue, &vec![]).unwrap(),
+                    make(&Instructions::OpFalse, &vec![]).unwrap(),
+                    make(&Instructions::OpEqual, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {

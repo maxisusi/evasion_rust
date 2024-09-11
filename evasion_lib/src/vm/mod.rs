@@ -61,6 +61,15 @@ impl<'a> VirtualMachine<'a> {
                 Instructions::OpFalse => {
                     self.push(ObjectType::Boolean(false));
                 }
+                Instructions::OpEqual => {
+                    todo!()
+                }
+                Instructions::OpNotEqual => {
+                    todo!()
+                }
+                Instructions::OpGreaterThan => {
+                    todo!()
+                }
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction
