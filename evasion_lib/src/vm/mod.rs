@@ -61,14 +61,9 @@ impl<'a> VirtualMachine<'a> {
                 Instructions::OpFalse => {
                     self.push(ObjectType::Boolean(false));
                 }
-                Instructions::OpEqual => {
-                    todo!()
-                }
-                Instructions::OpNotEqual => {
-                    todo!()
-                }
-                Instructions::OpGreaterThan => {
-                    todo!()
+                Instructions::OpEqual | Instructions::OpGreaterThan | Instructions::OpNotEqual => {
+                    let result = self.execute_binary_operation(op);
+                    self.push(result);
                 }
             }
 
@@ -82,17 +77,46 @@ impl<'a> VirtualMachine<'a> {
         let right_obj = self.pop();
         let left_obj = self.pop();
 
-        let integer_result = match (left_obj, right_obj) {
-            (ObjectType::Integer(left), ObjectType::Integer(right)) => (left, right),
-            _ => panic!("Add only accepts Integer Object"),
-        };
+        match (left_obj, right_obj) {
+            (ObjectType::Integer(left), ObjectType::Integer(right)) => {
+                self.execute_integer_operation(operation, left, right)
+            }
 
-        let (left, right) = integer_result;
-        match operation {
+            (ObjectType::Boolean(left), ObjectType::Boolean(right)) => {
+                self.execute_boolean_operation(operation, left, right)
+            }
+            _ => panic!("Add only accepts Integer Object"),
+        }
+    }
+
+    fn execute_integer_operation(
+        &mut self,
+        op: Instructions,
+        left: usize,
+        right: usize,
+    ) -> ObjectType {
+        match op {
             Instructions::OpAdd => ObjectType::Integer((left + right)),
             Instructions::OpDiv => ObjectType::Integer((left / right)),
             Instructions::OpMul => ObjectType::Integer((left * right)),
             Instructions::OpSub => ObjectType::Integer((left - right)),
+            Instructions::OpEqual => ObjectType::Boolean(left == right),
+            Instructions::OpNotEqual => ObjectType::Boolean(left != right),
+            Instructions::OpGreaterThan => ObjectType::Boolean(left > right),
+            _ => panic!("Not supported instruction"),
+        }
+    }
+
+    fn execute_boolean_operation(
+        &mut self,
+        op: Instructions,
+        left: bool,
+        right: bool,
+    ) -> ObjectType {
+        match op {
+            Instructions::OpEqual => ObjectType::Boolean(left == right),
+            Instructions::OpNotEqual => ObjectType::Boolean(left != right),
+            Instructions::OpGreaterThan => ObjectType::Boolean(left > right),
             _ => panic!("Not supported instruction"),
         }
     }

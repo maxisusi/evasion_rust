@@ -56,19 +56,25 @@ impl Compiler {
                 operator,
                 ..
             } => {
-                let left = self.compile_expression(*left);
-                let right = self.compile_expression(*right);
+                if operator.as_str() == "<" {
+                    let right = self.compile_expression(*right);
+                    let left = self.compile_expression(*left);
+                    self.emit(Instructions::OpGreaterThan, vec![]);
+                } else {
+                    let left = self.compile_expression(*left);
+                    let right = self.compile_expression(*right);
 
-                match operator.as_str() {
-                    "+" => self.emit(Instructions::OpAdd, vec![]),
-                    "-" => self.emit(Instructions::OpSub, vec![]),
-                    "*" => self.emit(Instructions::OpMul, vec![]),
-                    "/" => self.emit(Instructions::OpDiv, vec![]),
-                    "==" => self.emit(Instructions::OpEqual, vec![]),
-                    "!=" => self.emit(Instructions::OpNotEqual, vec![]),
-                    "<" | ">" => self.emit(Instructions::OpGreaterThan, vec![]),
-                    _ => panic!("Unknown operator: {}", operator),
-                };
+                    match operator.as_str() {
+                        "+" => self.emit(Instructions::OpAdd, vec![]),
+                        "-" => self.emit(Instructions::OpSub, vec![]),
+                        "*" => self.emit(Instructions::OpMul, vec![]),
+                        "/" => self.emit(Instructions::OpDiv, vec![]),
+                        "==" => self.emit(Instructions::OpEqual, vec![]),
+                        "!=" => self.emit(Instructions::OpNotEqual, vec![]),
+                        "<" | ">" => self.emit(Instructions::OpGreaterThan, vec![]),
+                        _ => panic!("Unknown operator: {}", operator),
+                    };
+                }
                 Some(())
             }
             crate::ast::Expressions::IntegerLiteral { token, value } => {

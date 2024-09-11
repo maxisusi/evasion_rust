@@ -46,6 +46,22 @@ mod tests {
             Test::new("5 * (2 + 10)", "60"),
             Test::new("true", "true"),
             Test::new("false", "false"),
+            Test::new("1 < 2", "true"),
+            Test::new("1 > 2", "false"),
+            Test::new("1 < 1", "false"),
+            Test::new("1 > 1", "false"),
+            Test::new("1 == 1", "true"),
+            Test::new("1 != 1", "false"),
+            Test::new("1 == 2", "false"),
+            Test::new("1 != 2", "true"),
+            Test::new("true == true", "true"),
+            Test::new("false == false", "true"),
+            Test::new("true == false", "false"),
+            Test::new("true != false", "true"),
+            Test::new("(1 < 2) == true", "true"),
+            Test::new("(1 < 2) == false", "false"),
+            Test::new("(1 > 2) == true", "false"),
+            Test::new("(1 > 2) == false", "true"),
         ];
 
         for test in tests {
