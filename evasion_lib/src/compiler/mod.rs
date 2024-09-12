@@ -1,5 +1,5 @@
 use core::panic;
-use std::usize;
+use std::{isize, usize};
 
 use crate::{
     ast::{self, Expressions},
@@ -94,7 +94,7 @@ impl Compiler {
                 Some(())
             }
             crate::ast::Expressions::IntegerLiteral { token, value } => {
-                let integer_object = object::ObjectType::Integer(value);
+                let integer_object = object::ObjectType::Integer(value as isize);
                 let idx_in_constant_pool = &[self.add_constant(integer_object)];
                 self.emit(
                     bytecode::Instructions::OpConstant,

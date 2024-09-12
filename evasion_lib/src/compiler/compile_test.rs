@@ -1,6 +1,6 @@
 mod tests {
     use core::panic;
-    use std::usize;
+    use std::{isize, usize};
 
     use crate::bytecode::{make, Instruction, Instructions};
 
@@ -240,13 +240,13 @@ mod tests {
         }
 
         for (idx, constant) in expected.into_iter().enumerate() {
-            if let Ok(res) = constant.parse::<usize>() {
+            if let Ok(res) = constant.parse::<isize>() {
                 h_test_integer_object(res, actual[idx])
             }
         }
     }
 
-    fn h_test_integer_object(value: usize, actual: ObjectType) {
+    fn h_test_integer_object(value: isize, actual: ObjectType) {
         match actual {
             ObjectType::Integer(integer_value) => {
                 if integer_value != value {

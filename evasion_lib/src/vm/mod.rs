@@ -1,5 +1,5 @@
 use core::panic;
-use std::usize;
+use std::{isize, usize};
 
 use crate::{
     bytecode::{self, Instruction, Instructions},
@@ -107,12 +107,12 @@ impl<'a> VirtualMachine<'a> {
         }
     }
 
-    fn execute_integer_operation(
-        &mut self,
-        op: Instructions,
-        left: usize,
-        right: usize,
-    ) -> ObjectType {
+    fn execute_integer_operation<T>(&mut self, op: Instructions, left: T, right: T) -> ObjectType
+    where
+        T: Into<isize>,
+    {
+        let left: isize = left.into();
+        let right: isize = right.into();
         match op {
             Instructions::OpAdd => ObjectType::Integer((left + right)),
             Instructions::OpDiv => ObjectType::Integer((left / right)),

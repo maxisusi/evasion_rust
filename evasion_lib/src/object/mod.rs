@@ -2,7 +2,7 @@ use std::{fmt::Display, usize};
 
 #[derive(Clone, Copy, Debug)]
 pub enum ObjectType {
-    Integer(usize),
+    Integer(isize),
     Boolean(bool),
     Null,
     NoOp,

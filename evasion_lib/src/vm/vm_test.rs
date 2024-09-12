@@ -1,6 +1,7 @@
 mod tests {
 
     use core::panic;
+    use std::isize;
 
     use crate::ast;
     use crate::compiler;
@@ -99,7 +100,7 @@ mod tests {
     {
         // Get the type of the string
         let expected: String = expected.into();
-        if let Ok(integer) = expected.parse::<usize>() {
+        if let Ok(integer) = expected.parse::<isize>() {
             h_test_integer_object(integer, actual)
         } else if Ok(true) == expected.parse::<bool>() || Ok(false) == expected.parse::<bool>() {
             match actual {
@@ -127,7 +128,7 @@ mod tests {
         parser.parse_program()
     }
 
-    fn h_test_integer_object(value: usize, actual: ObjectType) {
+    fn h_test_integer_object(value: isize, actual: ObjectType) {
         match actual {
             ObjectType::Integer(integer_value) => {
                 if integer_value != value {
