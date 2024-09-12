@@ -66,10 +66,22 @@ impl<'a> VirtualMachine<'a> {
                     self.push(result);
                 }
                 Instructions::OpBang => {
-                    todo!();
+                    let operhand = self.pop();
+
+                    match operhand {
+                        ObjectType::Boolean(value) => {
+                            if value == true {
+                                self.push(ObjectType::Boolean(false))
+                            } else {
+                                self.push(ObjectType::Boolean(true))
+                            }
+                        }
+                        ObjectType::Integer(..) => self.push(ObjectType::Boolean(false)),
+                        _ => panic!("Unhandled operhand"),
+                    };
                 }
                 Instructions::OpMinus => {
-                    todo!();
+                    todo!()
                 }
             }
 
