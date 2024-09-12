@@ -65,6 +65,12 @@ impl<'a> VirtualMachine<'a> {
                     let result = self.execute_binary_operation(op);
                     self.push(result);
                 }
+                Instructions::OpBang => {
+                    todo!();
+                }
+                Instructions::OpMinus => {
+                    todo!();
+                }
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction

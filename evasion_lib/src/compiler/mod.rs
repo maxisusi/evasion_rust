@@ -1,3 +1,4 @@
+use core::panic;
 use std::usize;
 
 use crate::{
@@ -75,6 +76,21 @@ impl Compiler {
                         _ => panic!("Unknown operator: {}", operator),
                     };
                 }
+                Some(())
+            }
+            crate::ast::Expressions::Prefix {
+                token,
+                operator,
+                right,
+            } => {
+                let right = self.compile_expression(*right);
+
+                match operator.as_str() {
+                    "!" => self.emit(bytecode::Instructions::OpBang, vec![]),
+                    "-" => self.emit(bytecode::Instructions::OpMinus, vec![]),
+                    _ => panic!("Unexpected operator founded for infix expression"),
+                };
+
                 Some(())
             }
             crate::ast::Expressions::IntegerLiteral { token, value } => {

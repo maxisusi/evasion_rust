@@ -66,6 +66,8 @@ pub enum Instructions {
     OpEqual,
     OpNotEqual,
     OpGreaterThan,
+    OpMinus,
+    OpBang,
 }
 
 impl Display for Instructions {
@@ -82,6 +84,8 @@ impl Display for Instructions {
             Instructions::OpEqual => write!(f, "OpEqual"),
             Instructions::OpNotEqual => write!(f, "OpNotEqual"),
             Instructions::OpGreaterThan => write!(f, "OpGreaterThan"),
+            Instructions::OpMinus => write!(f, "OpMinus"),
+            Instructions::OpBang => write!(f, "OpBang"),
         }
     }
 }
@@ -102,6 +106,8 @@ impl TryFrom<u8> for Instructions {
             8 => Ok(Instructions::OpEqual),
             9 => Ok(Instructions::OpNotEqual),
             10 => Ok(Instructions::OpGreaterThan),
+            11 => Ok(Instructions::OpMinus),
+            12 => Ok(Instructions::OpBang),
             _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
@@ -121,6 +127,8 @@ impl Into<u8> for Instructions {
             Instructions::OpEqual => 8,
             Instructions::OpNotEqual => 9,
             Instructions::OpGreaterThan => 10,
+            Instructions::OpMinus => 11,
+            Instructions::OpBang => 12,
         }
     }
 }
@@ -163,6 +171,8 @@ impl Definition {
             Instructions::OpNotEqual => {
                 Some(Definition::new(Instructions::OpNotEqual.to_string(), []))
             }
+            Instructions::OpMinus => Some(Definition::new(Instructions::OpMinus.to_string(), [])),
+            Instructions::OpBang => Some(Definition::new(Instructions::OpBang.to_string(), [])),
         }
     }
 }

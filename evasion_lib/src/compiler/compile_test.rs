@@ -118,7 +118,7 @@ mod tests {
             ),
             Test::new(
                 "1 < 2",
-                vec!["1", "2"],
+                vec!["2", "1"],
                 vec![
                     make(&Instructions::OpConstant, &vec![0]).unwrap(),
                     make(&Instructions::OpConstant, &vec![1]).unwrap(),
@@ -153,6 +153,24 @@ mod tests {
                     make(&Instructions::OpTrue, &vec![]).unwrap(),
                     make(&Instructions::OpFalse, &vec![]).unwrap(),
                     make(&Instructions::OpEqual, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "-1",
+                vec!["1"],
+                vec![
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    make(&Instructions::OpMinus, &vec![]).unwrap(),
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "!true",
+                vec!["true"],
+                vec![
+                    make(&Instructions::OpTrue, &vec![]).unwrap(),
+                    make(&Instructions::OpBang, &vec![]).unwrap(),
                     make(&Instructions::OpPop, &vec![]).unwrap(),
                 ],
             ),
