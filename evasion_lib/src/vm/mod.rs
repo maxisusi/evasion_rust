@@ -81,7 +81,12 @@ impl<'a> VirtualMachine<'a> {
                     };
                 }
                 Instructions::OpMinus => {
-                    todo!()
+                    let operhand = self.pop();
+
+                    match operhand {
+                        ObjectType::Integer(value) => self.push(ObjectType::Integer(-value)),
+                        _ => panic!("Unhandled operhand"),
+                    };
                 }
             }
 
