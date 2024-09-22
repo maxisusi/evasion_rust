@@ -174,6 +174,24 @@ mod tests {
                     make(&Instructions::OpPop, &vec![]).unwrap(),
                 ],
             ),
+            Test::new(
+                "if (true) { 10 }; 3333;",
+                vec!["10, 3333"],
+                vec![
+                    // 000
+                    make(&Instructions::OpTrue, &vec![]).unwrap(),
+                    // 001
+                    make(&Instructions::OpJumpNotTruthy, &vec![7]).unwrap(),
+                    // 004
+                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
+                    // 007
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    // 008
+                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
+                    // 0011
+                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {

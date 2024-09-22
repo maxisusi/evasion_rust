@@ -88,6 +88,9 @@ impl<'a> VirtualMachine<'a> {
                         _ => panic!("Unhandled operhand"),
                     };
                 }
+                Instructions::OpJump | Instructions::OpJumpNotTruthy => {
+                    todo!()
+                }
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction

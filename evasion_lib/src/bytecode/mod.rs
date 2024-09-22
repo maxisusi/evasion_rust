@@ -68,6 +68,8 @@ pub enum Instructions {
     OpGreaterThan,
     OpMinus,
     OpBang,
+    OpJumpNotTruthy,
+    OpJump,
 }
 
 impl Display for Instructions {
@@ -86,6 +88,8 @@ impl Display for Instructions {
             Instructions::OpGreaterThan => write!(f, "OpGreaterThan"),
             Instructions::OpMinus => write!(f, "OpMinus"),
             Instructions::OpBang => write!(f, "OpBang"),
+            Instructions::OpJumpNotTruthy => write!(f, "OpJumpNotTruthy"),
+            Instructions::OpJump => write!(f, "OpJump"),
         }
     }
 }
@@ -108,6 +112,8 @@ impl TryFrom<u8> for Instructions {
             10 => Ok(Instructions::OpGreaterThan),
             11 => Ok(Instructions::OpMinus),
             12 => Ok(Instructions::OpBang),
+            13 => Ok(Instructions::OpJumpNotTruthy),
+            14 => Ok(Instructions::OpJump),
             _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
         }
     }
@@ -129,6 +135,8 @@ impl Into<u8> for Instructions {
             Instructions::OpGreaterThan => 10,
             Instructions::OpMinus => 11,
             Instructions::OpBang => 12,
+            Instructions::OpJumpNotTruthy => 13,
+            Instructions::OpJump => 14,
         }
     }
 }
@@ -173,6 +181,11 @@ impl Definition {
             }
             Instructions::OpMinus => Some(Definition::new(Instructions::OpMinus.to_string(), [])),
             Instructions::OpBang => Some(Definition::new(Instructions::OpBang.to_string(), [])),
+            Instructions::OpJumpNotTruthy => Some(Definition::new(
+                Instructions::OpJumpNotTruthy.to_string(),
+                [2],
+            )),
+            Instructions::OpJump => Some(Definition::new(Instructions::OpJump.to_string(), [2])),
         }
     }
 }
@@ -192,7 +205,10 @@ pub fn make(opcode: &Instructions, operands: &Vec<usize>) -> Option<Instruction>
 
         let mut offset = 1;
         for (idx, operand) in operands.iter().enumerate() {
-            let witdh = definition.operands_width[idx];
+            let witdh = definition
+                .operands_width
+                .get(idx)
+                .expect(format!("Couldn't find width for instruction: {}", opcode).as_str());
 
             match witdh {
                 2 => {
