@@ -11,6 +11,22 @@ mod compile_test;
 pub struct Compiler {
     instruction: bytecode::Instruction,
     constant: Vec<object::ObjectType>,
+    last_instruction: EmitterInstruction,
+    previous_instruction: EmitterInstruction,
+}
+
+struct EmitterInstruction {
+    instruction: bytecode::Instruction,
+    position: usize,
+}
+
+impl EmitterInstruction {
+    fn new() -> Self {
+        Self {
+            instruction: Instruction(Vec::new()),
+            position: 0,
+        }
+    }
 }
 
 pub struct Bytecode<'a> {
@@ -23,6 +39,8 @@ impl Compiler {
         Self {
             instruction: Instruction(Vec::new()),
             constant: Vec::new(),
+            last_instruction: EmitterInstruction::new(),
+            previous_instruction: EmitterInstruction::new(),
         }
     }
 
