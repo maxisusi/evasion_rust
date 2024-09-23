@@ -78,6 +78,27 @@ impl Compiler {
                 }
                 Some(())
             }
+
+            crate::ast::Expressions::IfExpression {
+                token,
+                condition,
+                consequence,
+                alternative,
+            } => {
+                let condition = self.compile_expression(*condition);
+                let consequences = match *consequence {
+                    crate::ast::Statements::BlockStatements { token, statements } => statements,
+                    _ => panic!("Wrong expression type "),
+                };
+
+                self.emit(Instructions::OpJumpNotTruthy, vec![9999]);
+                // Compiling consequences
+                for consequence in consequences {
+                    self.compile_node(consequence)?
+                }
+
+                Some(())
+            }
             crate::ast::Expressions::Prefix {
                 token,
                 operator,
