@@ -30,7 +30,7 @@ impl<'a> VirtualMachine<'a> {
     pub fn run(&mut self) -> Result<(), String> {
         let mut ip = 0; // Instruction pointer
         while ip < self.instructions.0.len() {
-            let op = Instructions::try_from(self.instructions.0[ip])?;
+            let op = Instructions::from(self.instructions.0[ip]);
 
             match op {
                 Instructions::OpConstant => {

@@ -52,10 +52,10 @@ impl FromIterator<u8> for Instruction {
     }
 }
 
-#[repr(u8)]
 #[derive(PartialEq, Debug, Clone, Copy)]
+#[repr(u8)]
 pub enum Instructions {
-    OpConstant,
+    OpConstant = 0,
     OpAdd,
     OpPop,
     OpSub,
@@ -94,50 +94,15 @@ impl Display for Instructions {
     }
 }
 
-impl TryFrom<u8> for Instructions {
-    type Error = String;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        match value {
-            0 => Ok(Instructions::OpConstant),
-            1 => Ok(Instructions::OpAdd),
-            2 => Ok(Instructions::OpPop),
-            3 => Ok(Instructions::OpSub),
-            4 => Ok(Instructions::OpMul),
-            5 => Ok(Instructions::OpDiv),
-            6 => Ok(Instructions::OpTrue),
-            7 => Ok(Instructions::OpFalse),
-            8 => Ok(Instructions::OpEqual),
-            9 => Ok(Instructions::OpNotEqual),
-            10 => Ok(Instructions::OpGreaterThan),
-            11 => Ok(Instructions::OpMinus),
-            12 => Ok(Instructions::OpBang),
-            13 => Ok(Instructions::OpJumpNotTruthy),
-            14 => Ok(Instructions::OpJump),
-            _ => Err("Couldn't convert instruction {value} to a u8".to_string()),
-        }
+impl From<u8> for Instructions {
+    fn from(value: u8) -> Instructions {
+        unsafe { std::mem::transmute::<u8, Instructions>(value) }
     }
 }
 
 impl Into<u8> for Instructions {
     fn into(self) -> u8 {
-        match self {
-            Instructions::OpConstant => 0,
-            Instructions::OpAdd => 1,
-            Instructions::OpPop => 2,
-            Instructions::OpSub => 3,
-            Instructions::OpMul => 4,
-            Instructions::OpDiv => 5,
-            Instructions::OpTrue => 6,
-            Instructions::OpFalse => 7,
-            Instructions::OpEqual => 8,
-            Instructions::OpNotEqual => 9,
-            Instructions::OpGreaterThan => 10,
-            Instructions::OpMinus => 11,
-            Instructions::OpBang => 12,
-            Instructions::OpJumpNotTruthy => 13,
-            Instructions::OpJump => 14,
-        }
+        self as u8
     }
 }
 
