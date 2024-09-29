@@ -154,8 +154,6 @@ impl Compiler {
 
             crate::ast::Expressions::Boolean { token, value } => {
                 let boolean_object = object::ObjectType::Boolean(value);
-                let idx_in_constant_pool = &[self.add_constant(boolean_object)];
-
                 if value == true {
                     self.emit(bytecode::OpCode::OpTrue, vec![]);
                 } else {

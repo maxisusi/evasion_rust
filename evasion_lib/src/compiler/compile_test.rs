@@ -92,7 +92,7 @@ mod tests {
             ),
             Test::new(
                 "true",
-                vec!["true"],
+                vec![],
                 vec![
                     make(&OpCode::OpTrue, &vec![]).unwrap(),
                     make(&OpCode::OpPop, &vec![]).unwrap(),
@@ -100,7 +100,7 @@ mod tests {
             ),
             Test::new(
                 "false",
-                vec!["false"],
+                vec![],
                 vec![
                     make(&OpCode::OpFalse, &vec![]).unwrap(),
                     make(&OpCode::OpPop, &vec![]).unwrap(),
@@ -148,7 +148,7 @@ mod tests {
             ),
             Test::new(
                 "true == false",
-                vec!["true", "false"],
+                vec![],
                 vec![
                     make(&OpCode::OpTrue, &vec![]).unwrap(),
                     make(&OpCode::OpFalse, &vec![]).unwrap(),
@@ -167,7 +167,7 @@ mod tests {
             ),
             Test::new(
                 "!true",
-                vec!["true"],
+                vec![],
                 vec![
                     make(&OpCode::OpTrue, &vec![]).unwrap(),
                     make(&OpCode::OpBang, &vec![]).unwrap(),
