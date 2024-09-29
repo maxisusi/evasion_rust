@@ -83,6 +83,7 @@ impl Compiler {
                             self.instruction.0[..self.last_instruction.position].to_vec();
                     }
                 }
+
                 Some(())
             }
             _ => todo!(),
@@ -126,8 +127,13 @@ impl Compiler {
             } => {
                 let condition = self.compile_expression(*condition);
 
-                self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
+                // Emit OpJumpNotTruthy with wrong value
+                // We will patch it after compiling if expression
+                let position = self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
                 self.compile_statement(*consequence);
+                let after_consequence_offset = self.instruction.0.len();
+                self.change_operhand(position, after_consequence_offset);
+
                 Some(())
             }
             crate::ast::Expressions::Prefix {
@@ -176,6 +182,21 @@ impl Compiler {
         self.register_instruction(instruction, pos.clone());
 
         return pos;
+    }
+
+    fn remplace_instruction(&mut self, position: usize, instruction: bytecode::Instruction) {
+        for (i, bit) in instruction.0.into_iter().enumerate() {
+            self.instruction.0[position + i] = bit;
+        }
+    }
+
+    fn change_operhand(&mut self, position: usize, operhand: usize) {
+        let get_opcode = bytecode::OpCode::from(self.instruction.0.get(position).unwrap().clone());
+        let new_instruction = bytecode::make(&get_opcode, &vec![operhand]);
+
+        if let Some(instruction) = new_instruction {
+            self.remplace_instruction(position, instruction)
+        }
     }
 
     fn register_instruction(&mut self, instruction: bytecode::Instruction, position: usize) {

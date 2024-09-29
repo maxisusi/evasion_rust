@@ -176,7 +176,7 @@ mod tests {
             ),
             Test::new(
                 "if (true) { 10 }; 3333;",
-                vec!["10, 3333"],
+                vec!["10", "3333"],
                 vec![
                     // 000
                     make(&OpCode::OpTrue, &vec![]).unwrap(),
