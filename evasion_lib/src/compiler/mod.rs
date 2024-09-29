@@ -2,7 +2,7 @@ use core::panic;
 use std::{isize, usize};
 
 use crate::{
-    ast::{self, Expressions},
+    ast::{self, Expressions, Statements},
     bytecode::{self, Instruction, OpCode},
     object,
 };
@@ -59,12 +59,33 @@ impl Compiler {
             ast::Nodes::Expression(e) => {
                 if let Some(expr) = self.compile_expression(e) {
                     self.emit(OpCode::OpPop, vec![]);
+                    return Some(());
+                }
+
+                None
+            }
+            ast::Nodes::Statement(s) => {
+                if let Some(()) = self.compile_statement(s) {
+                    return Some(());
+                }
+                None
+            }
+        }
+    }
+
+    fn compile_statement(&mut self, statement: Statements) -> Option<()> {
+        match statement {
+            ast::Statements::BlockStatements { token, statements } => {
+                for consequence in statements {
+                    self.compile_node(consequence);
+                    if self.is_last_instruction_pop() {
+                        self.instruction.0 =
+                            self.instruction.0[..self.last_instruction.position].to_vec();
+                    }
                 }
                 Some(())
             }
-            ast::Nodes::Statement(s) => match s {
-                _ => todo!(),
-            },
+            _ => todo!(),
         }
     }
     fn compile_expression(&mut self, expression: Expressions) -> Option<()> {
@@ -106,22 +127,7 @@ impl Compiler {
                 let condition = self.compile_expression(*condition);
 
                 self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
-
-                let consequences = match *consequence {
-                    crate::ast::Statements::BlockStatements { token, statements } => statements,
-                    _ => panic!("Wrong expression type "),
-                };
-
-                // Compiling consequences
-                for consequence in consequences {
-                    self.compile_node(consequence);
-
-                    if self.is_last_instruction_pop() {
-                        self.instruction.0 =
-                            self.instruction.0[..self.last_instruction.position].to_vec();
-                    }
-                }
-
+                self.compile_statement(*consequence);
                 Some(())
             }
             crate::ast::Expressions::Prefix {
