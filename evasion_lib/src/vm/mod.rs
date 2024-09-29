@@ -2,7 +2,7 @@ use core::panic;
 use std::{isize, usize};
 
 use crate::{
-    bytecode::{self, Instruction, Instructions},
+    bytecode::{self, Instruction, OpCode},
     compiler,
     object::{self, ObjectType},
 };
@@ -30,10 +30,10 @@ impl<'a> VirtualMachine<'a> {
     pub fn run(&mut self) -> Result<(), String> {
         let mut ip = 0; // Instruction pointer
         while ip < self.instructions.0.len() {
-            let op = Instructions::from(self.instructions.0[ip]);
+            let op = OpCode::from(self.instructions.0[ip]);
 
             match op {
-                Instructions::OpConstant => {
+                OpCode::OpConstant => {
                     let index_from_object_pool =
                         bytecode::read_unit16(&self.instructions.0[(ip + 1)..]);
                     let constant = self.constants[index_from_object_pool as usize];
@@ -45,27 +45,27 @@ impl<'a> VirtualMachine<'a> {
                         );
                     }
                 }
-                Instructions::OpAdd
-                | Instructions::OpDiv
-                | Instructions::OpMul
-                | Instructions::OpSub => {
+                OpCode::OpAdd
+                | OpCode::OpDiv
+                | OpCode::OpMul
+                | OpCode::OpSub => {
                     let result = self.execute_binary_operation(op);
                     self.push(result);
                 }
-                Instructions::OpPop => {
+                OpCode::OpPop => {
                     self.pop();
                 }
-                Instructions::OpTrue => {
+                OpCode::OpTrue => {
                     self.push(ObjectType::Boolean(true));
                 }
-                Instructions::OpFalse => {
+                OpCode::OpFalse => {
                     self.push(ObjectType::Boolean(false));
                 }
-                Instructions::OpEqual | Instructions::OpGreaterThan | Instructions::OpNotEqual => {
+                OpCode::OpEqual | OpCode::OpGreaterThan | OpCode::OpNotEqual => {
                     let result = self.execute_binary_operation(op);
                     self.push(result);
                 }
-                Instructions::OpBang => {
+                OpCode::OpBang => {
                     let operhand = self.pop();
 
                     match operhand {
@@ -80,7 +80,7 @@ impl<'a> VirtualMachine<'a> {
                         _ => panic!("Unhandled operhand"),
                     };
                 }
-                Instructions::OpMinus => {
+                OpCode::OpMinus => {
                     let operhand = self.pop();
 
                     match operhand {
@@ -88,7 +88,7 @@ impl<'a> VirtualMachine<'a> {
                         _ => panic!("Unhandled operhand"),
                     };
                 }
-                Instructions::OpJump | Instructions::OpJumpNotTruthy => {
+                OpCode::OpJump | OpCode::OpJumpNotTruthy => {
                     todo!()
                 }
             }
@@ -99,7 +99,7 @@ impl<'a> VirtualMachine<'a> {
         Ok(())
     }
 
-    fn execute_binary_operation(&mut self, operation: Instructions) -> ObjectType {
+    fn execute_binary_operation(&mut self, operation: OpCode) -> ObjectType {
         let right_obj = self.pop();
         let left_obj = self.pop();
 
@@ -115,34 +115,34 @@ impl<'a> VirtualMachine<'a> {
         }
     }
 
-    fn execute_integer_operation<T>(&mut self, op: Instructions, left: T, right: T) -> ObjectType
+    fn execute_integer_operation<T>(&mut self, op: OpCode, left: T, right: T) -> ObjectType
     where
         T: Into<isize>,
     {
         let left: isize = left.into();
         let right: isize = right.into();
         match op {
-            Instructions::OpAdd => ObjectType::Integer((left + right)),
-            Instructions::OpDiv => ObjectType::Integer((left / right)),
-            Instructions::OpMul => ObjectType::Integer((left * right)),
-            Instructions::OpSub => ObjectType::Integer((left - right)),
-            Instructions::OpEqual => ObjectType::Boolean(left == right),
-            Instructions::OpNotEqual => ObjectType::Boolean(left != right),
-            Instructions::OpGreaterThan => ObjectType::Boolean(left > right),
+            OpCode::OpAdd => ObjectType::Integer((left + right)),
+            OpCode::OpDiv => ObjectType::Integer((left / right)),
+            OpCode::OpMul => ObjectType::Integer((left * right)),
+            OpCode::OpSub => ObjectType::Integer((left - right)),
+            OpCode::OpEqual => ObjectType::Boolean(left == right),
+            OpCode::OpNotEqual => ObjectType::Boolean(left != right),
+            OpCode::OpGreaterThan => ObjectType::Boolean(left > right),
             _ => panic!("Not supported instruction"),
         }
     }
 
     fn execute_boolean_operation(
         &mut self,
-        op: Instructions,
+        op: OpCode,
         left: bool,
         right: bool,
     ) -> ObjectType {
         match op {
-            Instructions::OpEqual => ObjectType::Boolean(left == right),
-            Instructions::OpNotEqual => ObjectType::Boolean(left != right),
-            Instructions::OpGreaterThan => ObjectType::Boolean(left > right),
+            OpCode::OpEqual => ObjectType::Boolean(left == right),
+            OpCode::OpNotEqual => ObjectType::Boolean(left != right),
+            OpCode::OpGreaterThan => ObjectType::Boolean(left > right),
             _ => panic!("Not supported instruction"),
         }
     }

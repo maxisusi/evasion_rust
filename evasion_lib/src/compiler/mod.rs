@@ -3,7 +3,7 @@ use std::{isize, usize};
 
 use crate::{
     ast::{self, Expressions},
-    bytecode::{self, Instruction, Instructions},
+    bytecode::{self, Instruction, OpCode},
     object,
 };
 mod compile_test;
@@ -14,7 +14,7 @@ pub struct Compiler {
     last_instruction: EmitterInstruction,
     previous_instruction: EmitterInstruction,
 }
-
+#[derive(Clone)]
 struct EmitterInstruction {
     instruction: bytecode::Instruction,
     position: usize,
@@ -58,7 +58,7 @@ impl Compiler {
         match node {
             ast::Nodes::Expression(e) => {
                 if let Some(expr) = self.compile_expression(e) {
-                    self.emit(Instructions::OpPop, vec![]);
+                    self.emit(OpCode::OpPop, vec![]);
                 }
                 Some(())
             }
@@ -78,19 +78,19 @@ impl Compiler {
                 if operator.as_str() == "<" {
                     let right = self.compile_expression(*right);
                     let left = self.compile_expression(*left);
-                    self.emit(Instructions::OpGreaterThan, vec![]);
+                    self.emit(OpCode::OpGreaterThan, vec![]);
                 } else {
                     let left = self.compile_expression(*left);
                     let right = self.compile_expression(*right);
 
                     match operator.as_str() {
-                        "+" => self.emit(Instructions::OpAdd, vec![]),
-                        "-" => self.emit(Instructions::OpSub, vec![]),
-                        "*" => self.emit(Instructions::OpMul, vec![]),
-                        "/" => self.emit(Instructions::OpDiv, vec![]),
-                        "==" => self.emit(Instructions::OpEqual, vec![]),
-                        "!=" => self.emit(Instructions::OpNotEqual, vec![]),
-                        "<" | ">" => self.emit(Instructions::OpGreaterThan, vec![]),
+                        "+" => self.emit(OpCode::OpAdd, vec![]),
+                        "-" => self.emit(OpCode::OpSub, vec![]),
+                        "*" => self.emit(OpCode::OpMul, vec![]),
+                        "/" => self.emit(OpCode::OpDiv, vec![]),
+                        "==" => self.emit(OpCode::OpEqual, vec![]),
+                        "!=" => self.emit(OpCode::OpNotEqual, vec![]),
+                        "<" | ">" => self.emit(OpCode::OpGreaterThan, vec![]),
                         _ => panic!("Unknown operator: {}", operator),
                     };
                 }
@@ -104,15 +104,22 @@ impl Compiler {
                 alternative,
             } => {
                 let condition = self.compile_expression(*condition);
+
+                self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
+
                 let consequences = match *consequence {
                     crate::ast::Statements::BlockStatements { token, statements } => statements,
                     _ => panic!("Wrong expression type "),
                 };
 
-                self.emit(Instructions::OpJumpNotTruthy, vec![9999]);
                 // Compiling consequences
                 for consequence in consequences {
-                    self.compile_node(consequence)?
+                    self.compile_node(consequence);
+
+                    if self.is_last_instruction_pop() {
+                        self.instruction.0 =
+                            self.instruction.0[..self.last_instruction.position].to_vec();
+                    }
                 }
 
                 Some(())
@@ -125,8 +132,8 @@ impl Compiler {
                 let right = self.compile_expression(*right);
 
                 match operator.as_str() {
-                    "!" => self.emit(bytecode::Instructions::OpBang, vec![]),
-                    "-" => self.emit(bytecode::Instructions::OpMinus, vec![]),
+                    "!" => self.emit(bytecode::OpCode::OpBang, vec![]),
+                    "-" => self.emit(bytecode::OpCode::OpMinus, vec![]),
                     _ => panic!("Unexpected operator founded for infix expression"),
                 };
 
@@ -135,10 +142,7 @@ impl Compiler {
             crate::ast::Expressions::IntegerLiteral { token, value } => {
                 let integer_object = object::ObjectType::Integer(value as isize);
                 let idx_in_constant_pool = &[self.add_constant(integer_object)];
-                self.emit(
-                    bytecode::Instructions::OpConstant,
-                    idx_in_constant_pool.to_vec(),
-                );
+                self.emit(bytecode::OpCode::OpConstant, idx_in_constant_pool.to_vec());
                 Some(())
             }
 
@@ -147,9 +151,9 @@ impl Compiler {
                 let idx_in_constant_pool = &[self.add_constant(boolean_object)];
 
                 if value == true {
-                    self.emit(bytecode::Instructions::OpTrue, vec![]);
+                    self.emit(bytecode::OpCode::OpTrue, vec![]);
                 } else {
-                    self.emit(bytecode::Instructions::OpFalse, vec![]);
+                    self.emit(bytecode::OpCode::OpFalse, vec![]);
                 }
                 Some(())
             }
@@ -162,23 +166,38 @@ impl Compiler {
         self.constant.len() - 1 // Returns the index from the constant pool
     }
 
-    fn emit(
-        &mut self,
-        opcode: bytecode::Instructions,
-        op_index_from_obj_pool: Vec<usize>,
-    ) -> usize {
+    fn emit(&mut self, opcode: bytecode::OpCode, op_index_from_obj_pool: Vec<usize>) -> usize {
         let instruction = bytecode::make(&opcode, &op_index_from_obj_pool).unwrap();
-        let pos = self.add_instruction(instruction);
+        let pos = self.add_instruction(instruction.clone());
+        self.register_instruction(instruction, pos.clone());
+
         return pos;
     }
 
+    fn register_instruction(&mut self, instruction: bytecode::Instruction, position: usize) {
+        let emitted_instruction = EmitterInstruction {
+            instruction,
+            position,
+        };
+
+        self.previous_instruction = self.last_instruction.clone();
+        self.last_instruction = emitted_instruction;
+    }
+
     fn add_instruction(&mut self, instruction: bytecode::Instruction) -> usize {
-        let pos_new_instruction = instruction.0.len();
+        let pos_new_instruction = self.instruction.0.len();
 
         for bit in instruction.0 {
             self.instruction.0.push(bit);
         }
         pos_new_instruction
+    }
+    fn is_last_instruction_pop(&self) -> bool {
+        let opcode = self.last_instruction.instruction.0.get(0);
+        if let Some(opcode) = opcode {
+            return OpCode::from(opcode.clone()) == OpCode::OpPop;
+        }
+        return false;
     }
 
     pub fn bytecode(&self) -> Bytecode {

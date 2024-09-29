@@ -54,7 +54,7 @@ impl FromIterator<u8> for Instruction {
 
 #[derive(PartialEq, Debug, Clone, Copy)]
 #[repr(u8)]
-pub enum Instructions {
+pub enum OpCode {
     OpConstant = 0,
     OpAdd,
     OpPop,
@@ -72,35 +72,35 @@ pub enum Instructions {
     OpJump,
 }
 
-impl Display for Instructions {
+impl Display for OpCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Instructions::OpConstant => write!(f, "OpConstant"),
-            Instructions::OpAdd => write!(f, "OpAdd"),
-            Instructions::OpPop => write!(f, "OpPop"),
-            Instructions::OpSub => write!(f, "OpSub"),
-            Instructions::OpMul => write!(f, "OpMul"),
-            Instructions::OpDiv => write!(f, "OpDiv"),
-            Instructions::OpTrue => write!(f, "OpTrue"),
-            Instructions::OpFalse => write!(f, "OpFalse"),
-            Instructions::OpEqual => write!(f, "OpEqual"),
-            Instructions::OpNotEqual => write!(f, "OpNotEqual"),
-            Instructions::OpGreaterThan => write!(f, "OpGreaterThan"),
-            Instructions::OpMinus => write!(f, "OpMinus"),
-            Instructions::OpBang => write!(f, "OpBang"),
-            Instructions::OpJumpNotTruthy => write!(f, "OpJumpNotTruthy"),
-            Instructions::OpJump => write!(f, "OpJump"),
+            OpCode::OpConstant => write!(f, "OpConstant"),
+            OpCode::OpAdd => write!(f, "OpAdd"),
+            OpCode::OpPop => write!(f, "OpPop"),
+            OpCode::OpSub => write!(f, "OpSub"),
+            OpCode::OpMul => write!(f, "OpMul"),
+            OpCode::OpDiv => write!(f, "OpDiv"),
+            OpCode::OpTrue => write!(f, "OpTrue"),
+            OpCode::OpFalse => write!(f, "OpFalse"),
+            OpCode::OpEqual => write!(f, "OpEqual"),
+            OpCode::OpNotEqual => write!(f, "OpNotEqual"),
+            OpCode::OpGreaterThan => write!(f, "OpGreaterThan"),
+            OpCode::OpMinus => write!(f, "OpMinus"),
+            OpCode::OpBang => write!(f, "OpBang"),
+            OpCode::OpJumpNotTruthy => write!(f, "OpJumpNotTruthy"),
+            OpCode::OpJump => write!(f, "OpJump"),
         }
     }
 }
 
-impl From<u8> for Instructions {
-    fn from(value: u8) -> Instructions {
-        unsafe { std::mem::transmute::<u8, Instructions>(value) }
+impl From<u8> for OpCode {
+    fn from(value: u8) -> OpCode {
+        unsafe { std::mem::transmute::<u8, OpCode>(value) }
     }
 }
 
-impl Into<u8> for Instructions {
+impl Into<u8> for OpCode {
     fn into(self) -> u8 {
         self as u8
     }
@@ -124,38 +124,31 @@ impl Definition {
 }
 
 impl Definition {
-    pub fn lookup(opcode: &Instructions) -> Option<Self> {
+    pub fn lookup(opcode: &OpCode) -> Option<Self> {
         let opcode = opcode.clone().into();
         match opcode {
-            Instructions::OpConstant => {
-                Some(Definition::new(Instructions::OpConstant.to_string(), [2]))
+            OpCode::OpConstant => Some(Definition::new(OpCode::OpConstant.to_string(), [2])),
+            OpCode::OpAdd => Some(Definition::new(OpCode::OpAdd.to_string(), [])),
+            OpCode::OpPop => Some(Definition::new(OpCode::OpPop.to_string(), [])),
+            OpCode::OpSub => Some(Definition::new(OpCode::OpSub.to_string(), [])),
+            OpCode::OpMul => Some(Definition::new(OpCode::OpMul.to_string(), [])),
+            OpCode::OpDiv => Some(Definition::new(OpCode::OpDiv.to_string(), [])),
+            OpCode::OpTrue => Some(Definition::new(OpCode::OpTrue.to_string(), [])),
+            OpCode::OpFalse => Some(Definition::new(OpCode::OpFalse.to_string(), [])),
+            OpCode::OpEqual => Some(Definition::new(OpCode::OpEqual.to_string(), [])),
+            OpCode::OpGreaterThan => Some(Definition::new(OpCode::OpGreaterThan.to_string(), [])),
+            OpCode::OpNotEqual => Some(Definition::new(OpCode::OpNotEqual.to_string(), [])),
+            OpCode::OpMinus => Some(Definition::new(OpCode::OpMinus.to_string(), [])),
+            OpCode::OpBang => Some(Definition::new(OpCode::OpBang.to_string(), [])),
+            OpCode::OpJumpNotTruthy => {
+                Some(Definition::new(OpCode::OpJumpNotTruthy.to_string(), [2]))
             }
-            Instructions::OpAdd => Some(Definition::new(Instructions::OpAdd.to_string(), [])),
-            Instructions::OpPop => Some(Definition::new(Instructions::OpPop.to_string(), [])),
-            Instructions::OpSub => Some(Definition::new(Instructions::OpSub.to_string(), [])),
-            Instructions::OpMul => Some(Definition::new(Instructions::OpMul.to_string(), [])),
-            Instructions::OpDiv => Some(Definition::new(Instructions::OpDiv.to_string(), [])),
-            Instructions::OpTrue => Some(Definition::new(Instructions::OpTrue.to_string(), [])),
-            Instructions::OpFalse => Some(Definition::new(Instructions::OpFalse.to_string(), [])),
-            Instructions::OpEqual => Some(Definition::new(Instructions::OpEqual.to_string(), [])),
-            Instructions::OpGreaterThan => {
-                Some(Definition::new(Instructions::OpGreaterThan.to_string(), []))
-            }
-            Instructions::OpNotEqual => {
-                Some(Definition::new(Instructions::OpNotEqual.to_string(), []))
-            }
-            Instructions::OpMinus => Some(Definition::new(Instructions::OpMinus.to_string(), [])),
-            Instructions::OpBang => Some(Definition::new(Instructions::OpBang.to_string(), [])),
-            Instructions::OpJumpNotTruthy => Some(Definition::new(
-                Instructions::OpJumpNotTruthy.to_string(),
-                [2],
-            )),
-            Instructions::OpJump => Some(Definition::new(Instructions::OpJump.to_string(), [2])),
+            OpCode::OpJump => Some(Definition::new(OpCode::OpJump.to_string(), [2])),
         }
     }
 }
 
-pub fn make(opcode: &Instructions, operands: &Vec<usize>) -> Option<Instruction> {
+pub fn make(opcode: &OpCode, operands: &Vec<usize>) -> Option<Instruction> {
     let defintion = Definition::lookup(opcode);
 
     if let Some(definition) = defintion {

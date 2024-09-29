@@ -10,12 +10,12 @@ mod tests {
     #[test]
     fn test_make() {
         struct Test {
-            opcode: bytecode::Instructions,
+            opcode: bytecode::OpCode,
             operand: Vec<usize>,
             expected: Vec<u8>,
         }
         impl Test {
-            fn new(opcode: bytecode::Instructions, operand: Vec<usize>, expected: Vec<u8>) -> Self {
+            fn new(opcode: bytecode::OpCode, operand: Vec<usize>, expected: Vec<u8>) -> Self {
                 Test {
                     opcode,
                     operand,
@@ -25,23 +25,19 @@ mod tests {
         }
         let tests = vec![
             Test::new(
-                bytecode::Instructions::OpConstant,
+                bytecode::OpCode::OpConstant,
                 vec![65534],
-                vec![
-                    bytecode::Instructions::OpConstant.into(),
-                    255.into(),
-                    254.into(),
-                ],
+                vec![bytecode::OpCode::OpConstant.into(), 255.into(), 254.into()],
             ),
             Test::new(
-                bytecode::Instructions::OpAdd,
+                bytecode::OpCode::OpAdd,
                 vec![],
-                vec![bytecode::Instructions::OpAdd.into()],
+                vec![bytecode::OpCode::OpAdd.into()],
             ),
             Test::new(
-                bytecode::Instructions::OpPop,
+                bytecode::OpCode::OpPop,
                 vec![],
-                vec![bytecode::Instructions::OpPop.into()],
+                vec![bytecode::OpCode::OpPop.into()],
             ),
         ];
         for test in tests {
@@ -73,10 +69,10 @@ mod tests {
     #[test]
     fn test_instruction_string() {
         let mut instructions = vec![
-            bytecode::make(&bytecode::Instructions::OpAdd, &vec![]),
-            bytecode::make(&bytecode::Instructions::OpConstant, &vec![2]),
-            bytecode::make(&bytecode::Instructions::OpConstant, &vec![65535]),
-            bytecode::make(&bytecode::Instructions::OpPop, &vec![]),
+            bytecode::make(&bytecode::OpCode::OpAdd, &vec![]),
+            bytecode::make(&bytecode::OpCode::OpConstant, &vec![2]),
+            bytecode::make(&bytecode::OpCode::OpConstant, &vec![65535]),
+            bytecode::make(&bytecode::OpCode::OpPop, &vec![]),
         ];
 
         let expected = "0000 OpAdd\n0001 OpConstant 2\n0004 OpConstant 65535\n0007 OpPop\n";
@@ -100,12 +96,12 @@ mod tests {
     #[test]
     fn test_read_operhands() {
         struct Test<const T: usize> {
-            opcode: bytecode::Instructions,
+            opcode: bytecode::OpCode,
             operand: [usize; T],
             bytes_read: usize,
         }
         impl<const T: usize> Test<T> {
-            fn new(opcode: bytecode::Instructions, operand: [usize; T], bytes_read: usize) -> Self {
+            fn new(opcode: bytecode::OpCode, operand: [usize; T], bytes_read: usize) -> Self {
                 Test {
                     opcode,
                     operand,
@@ -113,7 +109,7 @@ mod tests {
                 }
             }
         }
-        let tests = vec![Test::new(bytecode::Instructions::OpConstant, [65534], 2)];
+        let tests = vec![Test::new(bytecode::OpCode::OpConstant, [65534], 2)];
 
         for test in tests {
             let instruction = make(&test.opcode, &test.operand.to_vec()).unwrap();

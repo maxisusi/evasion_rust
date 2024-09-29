@@ -2,7 +2,7 @@ mod tests {
     use core::panic;
     use std::{isize, usize};
 
-    use crate::bytecode::{make, Instruction, Instructions};
+    use crate::bytecode::{make, Instruction, OpCode};
 
     use crate::ast;
     use crate::compiler::Compiler;
@@ -44,154 +44,154 @@ mod tests {
                 "1 + 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpAdd, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpAdd, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1; 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 - 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpSub, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpSub, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 * 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpMul, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpMul, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "2 / 1",
                 vec!["2", "1"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpDiv, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpDiv, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "true",
                 vec!["true"],
                 vec![
-                    make(&Instructions::OpTrue, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpTrue, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "false",
                 vec!["false"],
                 vec![
-                    make(&Instructions::OpFalse, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpFalse, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 > 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpGreaterThan, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpGreaterThan, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 < 2",
                 vec!["2", "1"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpGreaterThan, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpGreaterThan, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 == 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpEqual, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpEqual, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "1 != 2",
                 vec!["1", "2"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpConstant, &vec![1]).unwrap(),
-                    make(&Instructions::OpNotEqual, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpNotEqual, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "true == false",
                 vec!["true", "false"],
                 vec![
-                    make(&Instructions::OpTrue, &vec![]).unwrap(),
-                    make(&Instructions::OpFalse, &vec![]).unwrap(),
-                    make(&Instructions::OpEqual, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpTrue, &vec![]).unwrap(),
+                    make(&OpCode::OpFalse, &vec![]).unwrap(),
+                    make(&OpCode::OpEqual, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "-1",
                 vec!["1"],
                 vec![
-                    make(&Instructions::OpConstant, &vec![0]).unwrap(),
-                    make(&Instructions::OpMinus, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpMinus, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
             Test::new(
                 "!true",
                 vec!["true"],
                 vec![
-                    make(&Instructions::OpTrue, &vec![]).unwrap(),
-                    make(&Instructions::OpBang, &vec![]).unwrap(),
-                    make(&Instructions::OpPop, &vec![]).unwrap(),
+                    make(&OpCode::OpTrue, &vec![]).unwrap(),
+                    make(&OpCode::OpBang, &vec![]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
-            // Test::new(
-            //     "if (true) { 10 }; 3333;",
-            //     vec!["10, 3333"],
-            //     vec![
-            //         // 000
-            //         make(&Instructions::OpTrue, &vec![]).unwrap(),
-            //         // 001
-            //         make(&Instructions::OpJumpNotTruthy, &vec![7]).unwrap(),
-            //         // 004
-            //         make(&Instructions::OpConstant, &vec![0]).unwrap(),
-            //         // 007
-            //         make(&Instructions::OpPop, &vec![]).unwrap(),
-            //         // 008
-            //         make(&Instructions::OpConstant, &vec![1]).unwrap(),
-            //         // 0011
-            //         make(&Instructions::OpPop, &vec![]).unwrap(),
-            //     ],
-            // ),
+            Test::new(
+                "if (true) { 10 }; 3333;",
+                vec!["10, 3333"],
+                vec![
+                    // 000
+                    make(&OpCode::OpTrue, &vec![]).unwrap(),
+                    // 001
+                    make(&OpCode::OpJumpNotTruthy, &vec![7]).unwrap(),
+                    // 004
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    // 007
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                    // 008
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    // 0011
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {
