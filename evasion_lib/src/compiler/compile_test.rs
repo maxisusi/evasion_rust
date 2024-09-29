@@ -229,7 +229,7 @@ mod tests {
             if actual.0[idx] != *ins {
                 panic!(
                     "Wrong instruction at {}.\nwant={}\ngot={}",
-                    idx, actual, concatted
+                    idx, concatted, actual
                 )
             }
         }
