@@ -113,7 +113,7 @@ impl Compiler {
                         "==" => self.emit(OpCode::OpEqual, vec![]),
                         "!=" => self.emit(OpCode::OpNotEqual, vec![]),
                         "<" | ">" => self.emit(OpCode::OpGreaterThan, vec![]),
-                        _ => panic!("Unknown operator: {}", operator),
+                        _ => return None,
                     };
                 }
                 Some(())
@@ -129,10 +129,23 @@ impl Compiler {
 
                 // Emit OpJumpNotTruthy with wrong value
                 // We will patch it after compiling if expression
-                let position = self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
+                let jump_not_truthy_pos = self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
                 self.compile_statement(*consequence);
-                let after_consequence_offset = self.instruction.0.len();
-                self.change_operhand(position, after_consequence_offset);
+
+                if let None = alternative {
+                    let after_consequence_offset = self.instruction.0.len();
+                    self.change_operhand(jump_not_truthy_pos, after_consequence_offset);
+                } else {
+                    let jump_pos = self.emit(OpCode::OpJump, vec![999]);
+
+                    let after_consequence_offset = self.instruction.0.len();
+                    self.change_operhand(jump_not_truthy_pos, after_consequence_offset);
+                    self.compile_statement(*alternative.unwrap());
+
+                    let after_alternative_offset = self.instruction.0.len();
+
+                    self.change_operhand(jump_pos, after_alternative_offset);
+                }
 
                 Some(())
             }

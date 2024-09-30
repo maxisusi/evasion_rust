@@ -188,7 +188,29 @@ mod tests {
                     make(&OpCode::OpPop, &vec![]).unwrap(),
                     // 008
                     make(&OpCode::OpConstant, &vec![1]).unwrap(),
-                    // 0011
+                    // 011
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "if (true) { 10 } else { 20 }; 3333; ",
+                vec!["10", "20", "3333"],
+                vec![
+                    // 000
+                    make(&OpCode::OpTrue, &vec![]).unwrap(),
+                    // 001
+                    make(&OpCode::OpJumpNotTruthy, &vec![10]).unwrap(),
+                    // 004
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(), // 10
+                    // 007
+                    make(&OpCode::OpJump, &vec![13]).unwrap(),
+                    // 010
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(), // 20
+                    // 013
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                    // 014
+                    make(&OpCode::OpConstant, &vec![2]).unwrap(), // 3333
+                    // 017
                     make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
