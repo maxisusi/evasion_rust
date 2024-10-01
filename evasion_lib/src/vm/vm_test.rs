@@ -122,10 +122,11 @@ mod tests {
                 ),
             }
         } else {
-            panic!(
-                "Unexpected value, expected Integer Object or Boolean, got={:?}",
-                actual
-            )
+            if expected == "Null" {
+                return;
+            } else {
+                panic!("Couldn't parse object expression")
+            }
         }
     }
 

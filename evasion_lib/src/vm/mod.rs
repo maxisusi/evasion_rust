@@ -104,9 +104,7 @@ impl<'a> VirtualMachine<'a> {
                         _ => ip = (position as usize) - 1,
                     }
                 }
-                OpCode::OpNull => {
-                    todo!()
-                }
+                OpCode::OpNull => self.push(ObjectType::Null)?,
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction
