@@ -19,7 +19,7 @@ impl Display for ObjectType {
         match self {
             ObjectType::Integer(value) => write!(f, "{value}"),
             ObjectType::Boolean(value) => write!(f, "{value}"),
-            ObjectType::Null => write!(f, ""),
+            ObjectType::Null => write!(f, "Null"),
             ObjectType::NoOp => write!(f, ""),
         }
     }

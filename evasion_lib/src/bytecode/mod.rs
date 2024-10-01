@@ -70,6 +70,7 @@ pub enum OpCode {
     OpBang,
     OpJumpNotTruthy,
     OpJump,
+    OpNull,
 }
 
 impl Display for OpCode {
@@ -90,6 +91,7 @@ impl Display for OpCode {
             OpCode::OpBang => write!(f, "OpBang"),
             OpCode::OpJumpNotTruthy => write!(f, "OpJumpNotTruthy"),
             OpCode::OpJump => write!(f, "OpJump"),
+            OpCode::OpNull => write!(f, "OpNull"),
         }
     }
 }
@@ -144,6 +146,7 @@ impl Definition {
                 Some(Definition::new(OpCode::OpJumpNotTruthy.to_string(), [2]))
             }
             OpCode::OpJump => Some(Definition::new(OpCode::OpJump.to_string(), [2])),
+            OpCode::OpNull => Some(Definition::new(OpCode::OpNull.to_string(), [])),
         }
     }
 }

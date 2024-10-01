@@ -45,10 +45,7 @@ impl<'a> VirtualMachine<'a> {
                         );
                     }
                 }
-                OpCode::OpAdd
-                | OpCode::OpDiv
-                | OpCode::OpMul
-                | OpCode::OpSub => {
+                OpCode::OpAdd | OpCode::OpDiv | OpCode::OpMul | OpCode::OpSub => {
                     let result = self.execute_binary_operation(op);
                     self.push(result);
                 }
@@ -88,7 +85,26 @@ impl<'a> VirtualMachine<'a> {
                         _ => panic!("Unhandled operhand"),
                     };
                 }
-                OpCode::OpJump | OpCode::OpJumpNotTruthy => {
+                OpCode::OpJump => {
+                    let position = bytecode::read_unit16(&self.instructions.0[ip + 1..]);
+                    ip = (position as usize) - 1;
+                }
+                OpCode::OpJumpNotTruthy => {
+                    let position = bytecode::read_unit16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    let condition = self.pop();
+
+                    match condition {
+                        ObjectType::Boolean(val) => {
+                            if !val {
+                                ip = (position as usize) - 1
+                            }
+                        }
+                        _ => ip = (position as usize) - 1,
+                    }
+                }
+                OpCode::OpNull => {
                     todo!()
                 }
             }
@@ -133,12 +149,7 @@ impl<'a> VirtualMachine<'a> {
         }
     }
 
-    fn execute_boolean_operation(
-        &mut self,
-        op: OpCode,
-        left: bool,
-        right: bool,
-    ) -> ObjectType {
+    fn execute_boolean_operation(&mut self, op: OpCode, left: bool, right: bool) -> ObjectType {
         match op {
             OpCode::OpEqual => ObjectType::Boolean(left == right),
             OpCode::OpNotEqual => ObjectType::Boolean(left != right),

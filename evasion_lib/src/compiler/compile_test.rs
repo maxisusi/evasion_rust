@@ -181,14 +181,18 @@ mod tests {
                     // 000
                     make(&OpCode::OpTrue, &vec![]).unwrap(),
                     // 001
-                    make(&OpCode::OpJumpNotTruthy, &vec![7]).unwrap(),
+                    make(&OpCode::OpJumpNotTruthy, &vec![10]).unwrap(),
                     // 004
                     make(&OpCode::OpConstant, &vec![0]).unwrap(),
                     // 007
-                    make(&OpCode::OpPop, &vec![]).unwrap(),
-                    // 008
-                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpJump, &vec![11]).unwrap(),
+                    // 010
+                    make(&OpCode::OpNull, &vec![]).unwrap(),
                     // 011
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                    // 012
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    // 015
                     make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),

@@ -132,20 +132,17 @@ impl Compiler {
                 let jump_not_truthy_pos = self.emit(OpCode::OpJumpNotTruthy, vec![9999]);
                 self.compile_statement(*consequence);
 
+                let jump_pos = self.emit(OpCode::OpJump, vec![999]);
+                let after_consequence_offset = self.instruction.0.len();
+                self.change_operhand(jump_not_truthy_pos, after_consequence_offset);
+
                 if let None = alternative {
-                    let after_consequence_offset = self.instruction.0.len();
-                    self.change_operhand(jump_not_truthy_pos, after_consequence_offset);
+                    self.emit(OpCode::OpNull, vec![]);
                 } else {
-                    let jump_pos = self.emit(OpCode::OpJump, vec![999]);
-
-                    let after_consequence_offset = self.instruction.0.len();
-                    self.change_operhand(jump_not_truthy_pos, after_consequence_offset);
                     self.compile_statement(*alternative.unwrap());
-
-                    let after_alternative_offset = self.instruction.0.len();
-
-                    self.change_operhand(jump_pos, after_alternative_offset);
                 }
+                let after_alternative_offset = self.instruction.0.len();
+                self.change_operhand(jump_pos, after_alternative_offset);
 
                 Some(())
             }

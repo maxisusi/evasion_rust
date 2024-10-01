@@ -73,6 +73,13 @@ mod tests {
             Test::new("!!true", "true"),
             Test::new("!!false", "false"),
             Test::new("!!5", "true"),
+            Test::new("if (true) { 10 }", "10"),
+            Test::new("if (true) { 10 } else { 20 }", "10"),
+            Test::new("if (false) { 10 } else { 20 }", "20"),
+            Test::new("if (1 < 2) { 10 }", "10"),
+            Test::new("if (1 < 2) { 10 } else { 20 }", "10"),
+            Test::new("if (1 > 2) { 10 } else { 20 }", "20"),
+            Test::new("if (false) { 10 }", "Null"),
         ];
 
         for test in tests {
