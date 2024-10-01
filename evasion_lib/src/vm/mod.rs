@@ -73,8 +73,9 @@ impl<'a> VirtualMachine<'a> {
                                 self.push(ObjectType::Boolean(true))
                             }
                         }
+                        ObjectType::Null => self.push(ObjectType::Boolean(false)),
                         ObjectType::Integer(..) => self.push(ObjectType::Boolean(false)),
-                        _ => panic!("Unhandled operhand"),
+                        _ => self.push(ObjectType::Boolean(false)),
                     };
                 }
                 OpCode::OpMinus => {
@@ -95,13 +96,8 @@ impl<'a> VirtualMachine<'a> {
 
                     let condition = self.pop();
 
-                    match condition {
-                        ObjectType::Boolean(val) => {
-                            if !val {
-                                ip = (position as usize) - 1
-                            }
-                        }
-                        _ => ip = (position as usize) - 1,
+                    if !self.is_truthy(condition) {
+                        ip = (position as usize) - 1;
                     }
                 }
                 OpCode::OpNull => self.push(ObjectType::Null)?,
@@ -111,6 +107,14 @@ impl<'a> VirtualMachine<'a> {
         }
 
         Ok(())
+    }
+
+    fn is_truthy(&self, obj: ObjectType) -> bool {
+        match obj {
+            ObjectType::Boolean(value) => value,
+            ObjectType::Null => false,
+            _ => true,
+        }
     }
 
     fn execute_binary_operation(&mut self, operation: OpCode) -> ObjectType {

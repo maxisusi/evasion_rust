@@ -79,7 +79,9 @@ mod tests {
             Test::new("if (1 < 2) { 10 }", "10"),
             Test::new("if (1 < 2) { 10 } else { 20 }", "10"),
             Test::new("if (1 > 2) { 10 } else { 20 }", "20"),
-            Test::new("if (false) { 10 }", "Null"),
+            Test::new("if (false) { 10 }", "null"),
+            Test::new("!(if (false) { 5; })", "false"),
+            Test::new("if ((if (false) { 10 })) { 10 } else { 20 }", "20"),
         ];
 
         for test in tests {
@@ -122,7 +124,7 @@ mod tests {
                 ),
             }
         } else {
-            if expected == "Null" {
+            if expected == "null" {
                 return;
             } else {
                 panic!("Couldn't parse object expression")
