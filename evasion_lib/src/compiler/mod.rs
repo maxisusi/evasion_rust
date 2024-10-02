@@ -2,9 +2,10 @@ use core::panic;
 use std::{isize, usize};
 
 use crate::{
-    ast::{self, Expressions, Statements},
+    ast::{self, Expressions, Node, Statements},
     bytecode::{self, Instruction, OpCode},
     object,
+    symbol_table::{self, SymbolTable},
 };
 mod compile_test;
 
@@ -13,6 +14,7 @@ pub struct Compiler {
     constant: Vec<object::ObjectType>,
     last_instruction: EmitterInstruction,
     previous_instruction: EmitterInstruction,
+    symbol_table: SymbolTable,
 }
 #[derive(Clone)]
 struct EmitterInstruction {
@@ -41,6 +43,7 @@ impl Compiler {
             constant: Vec::new(),
             last_instruction: EmitterInstruction::new(),
             previous_instruction: EmitterInstruction::new(),
+            symbol_table: SymbolTable::new(),
         }
     }
 
@@ -86,12 +89,27 @@ impl Compiler {
 
                 Some(())
             }
-            ast::Statements::Let { token, name, value } => self.compile_expression(value),
+            ast::Statements::Let { token, name, value } => {
+                self.compile_expression(value);
+                let symbol = self.symbol_table.define(name.token_litteral());
+                self.emit(OpCode::OpSetGlobal, vec![symbol.index]);
+
+                Some(())
+            }
             _ => todo!("Compiling Other statements..."),
         }
     }
     fn compile_expression(&mut self, expression: Expressions) -> Option<()> {
         match expression {
+            crate::ast::Expressions::Identifier { token, value } => {
+                let symbol = self.symbol_table.resolve(token.litteral);
+                if let Some(res_symbol) = symbol {
+                    self.emit(OpCode::OpGetGlobal, vec![res_symbol.index]);
+                } else {
+                    return None;
+                }
+                Some(())
+            }
             crate::ast::Expressions::Infix {
                 left,
                 right,

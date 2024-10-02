@@ -2,19 +2,19 @@ use std::{collections::HashMap, fmt::Display, usize};
 mod symbol_table_tests;
 
 #[derive(Debug, PartialEq, Clone)]
-enum Scope {
+pub enum Scope {
     GlobalScope,
 }
 
 #[derive(PartialEq, Debug, Clone)]
-struct Symbol {
+pub struct Symbol {
     name: String,
     scope: Scope,
-    index: usize,
+    pub index: usize,
 }
 
 impl Symbol {
-    fn new<T>(name: T, scope: Scope, index: usize) -> Self
+    pub fn new<T>(name: T, scope: Scope, index: usize) -> Self
     where
         T: Into<String>,
     {
@@ -31,20 +31,20 @@ impl Display for Symbol {
     }
 }
 
-struct SymbolTable {
+pub struct SymbolTable {
     store: HashMap<String, Symbol>,
     num_definition: usize,
 }
 
 impl SymbolTable {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             store: HashMap::new(),
             num_definition: 0,
         }
     }
 
-    fn define<T>(&mut self, name: T) -> Symbol
+    pub fn define<T>(&mut self, name: T) -> Symbol
     where
         T: Into<String>,
     {
@@ -55,7 +55,7 @@ impl SymbolTable {
         self.num_definition += 1;
         symbol
     }
-    fn resolve<T>(&self, symbol: T) -> Option<&Symbol>
+    pub fn resolve<T>(&self, symbol: T) -> Option<&Symbol>
     where
         T: Into<String>,
     {
