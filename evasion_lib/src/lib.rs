@@ -8,6 +8,9 @@ mod bytecode;
 pub mod vm;
 
 #[allow(unused)]
+pub mod symbol_table;
+
+#[allow(unused)]
 pub mod compiler;
 pub mod lexer;
 
