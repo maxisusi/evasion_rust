@@ -71,6 +71,8 @@ pub enum OpCode {
     OpJumpNotTruthy,
     OpJump,
     OpNull,
+    OpGetGlobal,
+    OpSetGlobal,
 }
 
 impl Display for OpCode {
@@ -92,6 +94,8 @@ impl Display for OpCode {
             OpCode::OpJumpNotTruthy => write!(f, "OpJumpNotTruthy"),
             OpCode::OpJump => write!(f, "OpJump"),
             OpCode::OpNull => write!(f, "OpNull"),
+            OpCode::OpGetGlobal => write!(f, "OpGetGlobal"),
+            OpCode::OpSetGlobal => write!(f, "OpSetGlobal"),
         }
     }
 }
@@ -147,6 +151,8 @@ impl Definition {
             }
             OpCode::OpJump => Some(Definition::new(OpCode::OpJump.to_string(), [2])),
             OpCode::OpNull => Some(Definition::new(OpCode::OpNull.to_string(), [])),
+            OpCode::OpGetGlobal => Some(Definition::new(OpCode::OpGetGlobal.to_string(), [2])),
+            OpCode::OpSetGlobal => Some(Definition::new(OpCode::OpSetGlobal.to_string(), [2])),
         }
     }
 }

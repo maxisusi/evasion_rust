@@ -86,7 +86,8 @@ impl Compiler {
 
                 Some(())
             }
-            _ => todo!(),
+            ast::Statements::Let { token, name, value } => self.compile_expression(value),
+            _ => todo!("Compiling Other statements..."),
         }
     }
     fn compile_expression(&mut self, expression: Expressions) -> Option<()> {

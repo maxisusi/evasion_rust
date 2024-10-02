@@ -101,6 +101,9 @@ impl<'a> VirtualMachine<'a> {
                     }
                 }
                 OpCode::OpNull => self.push(ObjectType::Null)?,
+                OpCode::OpGetGlobal | OpCode::OpSetGlobal => {
+                    todo!("Executing OpGetGlobal and OpSetGlobal in VM")
+                }
             }
 
             ip += 1; // Increment Instruction Pointer in order to loop at the next instruction

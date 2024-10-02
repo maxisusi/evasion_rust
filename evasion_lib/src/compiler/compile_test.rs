@@ -218,6 +218,42 @@ mod tests {
                     make(&OpCode::OpPop, &vec![]).unwrap(),
                 ],
             ),
+            Test::new(
+                "let one = 1;
+                        let two = 2;",
+                vec!["1", "2"],
+                vec![
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpSetGlobal, &vec![0]).unwrap(),
+                    make(&OpCode::OpConstant, &vec![1]).unwrap(),
+                    make(&OpCode::OpSetGlobal, &vec![1]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "let one = 1;
+                        one;",
+                vec!["1"],
+                vec![
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpSetGlobal, &vec![0]).unwrap(),
+                    make(&OpCode::OpGetGlobal, &vec![0]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                ],
+            ),
+            Test::new(
+                "let one = 1;
+                        let two = one;
+                        two;",
+                vec!["1"],
+                vec![
+                    make(&OpCode::OpConstant, &vec![0]).unwrap(),
+                    make(&OpCode::OpSetGlobal, &vec![0]).unwrap(),
+                    make(&OpCode::OpGetGlobal, &vec![0]).unwrap(),
+                    make(&OpCode::OpSetGlobal, &vec![1]).unwrap(),
+                    make(&OpCode::OpGetGlobal, &vec![1]).unwrap(),
+                    make(&OpCode::OpPop, &vec![]).unwrap(),
+                ],
+            ),
         ];
 
         fn run_compiler_test(tests: &[Test]) {
