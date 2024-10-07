@@ -7,6 +7,7 @@ mod tests {
     use crate::ast;
     use crate::compiler::Compiler;
     use crate::object::ObjectType;
+    use crate::symbol_table::SymbolTable;
     use crate::{
         ast::{Expressions, Node, Nodes, Statements},
         lexer::Lexer,
@@ -260,7 +261,8 @@ mod tests {
             for test in tests {
                 // Parsing
                 let program = h_parse(&test.input);
-                let mut compiler = Compiler::new();
+                let mut symbol_table = SymbolTable::new();
+                let mut compiler = Compiler::new(&mut symbol_table);
 
                 match compiler.compile_program(program.statments) {
                     Ok(..) => {

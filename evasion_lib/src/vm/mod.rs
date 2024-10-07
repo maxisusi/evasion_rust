@@ -10,20 +10,27 @@ use crate::{
 mod vm_test;
 
 const STACK_SIZE: usize = 2048;
+pub const GLOBAL_SIZE: usize = 6625;
+
 pub struct VirtualMachine<'a> {
     constants: &'a Vec<object::ObjectType>,
     instructions: &'a Instruction,
     stack: [ObjectType; STACK_SIZE],
+    global: &'a mut [ObjectType; GLOBAL_SIZE],
     sp: usize,
 }
 
 impl<'a> VirtualMachine<'a> {
-    pub fn new(bytecode_object: compiler::Bytecode<'a>) -> Self {
+    pub fn new(
+        bytecode_object: compiler::Bytecode<'a>,
+        global: &'a mut [ObjectType; GLOBAL_SIZE],
+    ) -> Self {
         Self {
             instructions: bytecode_object.instruction,
             constants: bytecode_object.constant,
             sp: 0,
             stack: [ObjectType::default(); STACK_SIZE],
+            global,
         }
     }
 
@@ -101,8 +108,19 @@ impl<'a> VirtualMachine<'a> {
                     }
                 }
                 OpCode::OpNull => self.push(ObjectType::Null)?,
-                OpCode::OpGetGlobal | OpCode::OpSetGlobal => {
-                    todo!("Executing OpGetGlobal and OpSetGlobal in VM")
+                OpCode::OpSetGlobal => {
+                    let position = bytecode::read_unit16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+
+                    self.global[position as usize] = self.pop();
+                }
+                OpCode::OpGetGlobal => {
+                    let position = bytecode::read_unit16(&self.instructions.0[ip + 1..]);
+                    ip += 2;
+                    let get_object = self.global.get(position as usize);
+                    if let Some(obj) = get_object {
+                        self.push(*obj);
+                    }
                 }
             }
 

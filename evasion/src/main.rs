@@ -1,4 +1,4 @@
-use evasion_lib::{compiler, lexer, parser, vm};
+use evasion_lib::{compiler, lexer, object::ObjectType, parser, symbol_table::SymbolTable, vm};
 
 use std::io::{stdin, stdout, Write};
 
@@ -7,6 +7,9 @@ fn main() {
 }
 
 fn run() {
+    let mut symbol_table = Box::new(SymbolTable::new());
+    let mut global = [ObjectType::default(); vm::GLOBAL_SIZE];
+
     loop {
         print!(">> ");
         stdout().flush().unwrap();
@@ -20,13 +23,13 @@ fn run() {
 
         let program = parser.parse_program();
 
-        let mut compiler = compiler::Compiler::new();
+        let mut compiler = compiler::Compiler::new(&mut *symbol_table);
         let bytecode = compiler
             .compile_program(program.statments)
             .unwrap()
             .bytecode();
 
-        let mut vm = vm::VirtualMachine::new(bytecode);
+        let mut vm = vm::VirtualMachine::new(bytecode, &mut global);
 
         if let Err(err) = vm.run() {
             panic!("An error occured: {err}")

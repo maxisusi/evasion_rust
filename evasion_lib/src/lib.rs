@@ -15,7 +15,7 @@ pub mod compiler;
 pub mod lexer;
 
 #[allow(unused)]
-mod object;
+pub mod object;
 
 #[allow(unused)]
 pub mod parser;

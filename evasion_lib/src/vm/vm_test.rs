@@ -6,7 +6,10 @@ mod tests {
     use crate::ast;
     use crate::compiler;
     use crate::object::ObjectType;
+    use crate::symbol_table;
+    use crate::symbol_table::SymbolTable;
     use crate::vm::VirtualMachine;
+    use crate::vm::GLOBAL_SIZE;
     use crate::{
         ast::{Expressions, Node, Nodes, Statements},
         lexer::Lexer,
@@ -82,16 +85,21 @@ mod tests {
             Test::new("if (false) { 10 }", "null"),
             Test::new("!(if (false) { 5; })", "false"),
             Test::new("if ((if (false) { 10 })) { 10 } else { 20 }", "20"),
+            Test::new("let one = 1; one", "1"),
+            Test::new("let one = 1; let two = 2; one + two ", "3"),
+            Test::new("let one = 1; let two = one + one; one + two ", "3"),
         ];
 
         for test in tests {
             let program = h_parse(&test.input);
 
-            let mut compiler = compiler::Compiler::new();
+            let mut symbol_table = SymbolTable::new();
+            let mut global = [ObjectType::default(); GLOBAL_SIZE];
+            let mut compiler = compiler::Compiler::new(&mut symbol_table);
             compiler.compile_program(program.statments);
             let bytecode = compiler.bytecode();
 
-            let mut vm = VirtualMachine::new(bytecode);
+            let mut vm = VirtualMachine::new(bytecode, &mut global);
 
             if let Err(err) = vm.run() {
                 panic!("An error occured: {err}")
