@@ -9,6 +9,7 @@ fn main() {
 fn run() {
     let mut symbol_table = Box::new(SymbolTable::new());
     let mut global = [ObjectType::default(); vm::GLOBAL_SIZE];
+    let mut constant: Vec<ObjectType> = Vec::new();
 
     loop {
         print!(">> ");
@@ -23,7 +24,7 @@ fn run() {
 
         let program = parser.parse_program();
 
-        let mut compiler = compiler::Compiler::new(&mut *symbol_table);
+        let mut compiler = compiler::Compiler::new(&mut *symbol_table, &mut constant);
         let bytecode = compiler
             .compile_program(program.statments)
             .unwrap()

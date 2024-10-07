@@ -95,7 +95,8 @@ mod tests {
 
             let mut symbol_table = SymbolTable::new();
             let mut global = [ObjectType::default(); GLOBAL_SIZE];
-            let mut compiler = compiler::Compiler::new(&mut symbol_table);
+            let mut constant: Vec<ObjectType> = Vec::new();
+            let mut compiler = compiler::Compiler::new(&mut symbol_table, &mut constant);
             compiler.compile_program(program.statments);
             let bytecode = compiler.bytecode();
 

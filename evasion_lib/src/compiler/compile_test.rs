@@ -262,7 +262,8 @@ mod tests {
                 // Parsing
                 let program = h_parse(&test.input);
                 let mut symbol_table = SymbolTable::new();
-                let mut compiler = Compiler::new(&mut symbol_table);
+                let mut constants: Vec<ObjectType> = Vec::new();
+                let mut compiler = Compiler::new(&mut symbol_table, &mut constants);
 
                 match compiler.compile_program(program.statments) {
                     Ok(..) => {

@@ -11,7 +11,7 @@ mod compile_test;
 
 pub struct Compiler<'a> {
     instruction: bytecode::Instruction,
-    constant: Vec<object::ObjectType>,
+    constant: &'a mut Vec<object::ObjectType>,
     last_instruction: EmitterInstruction,
     previous_instruction: EmitterInstruction,
     symbol_table: &'a mut SymbolTable,
@@ -37,10 +37,13 @@ pub struct Bytecode<'a> {
 }
 
 impl<'a> Compiler<'a> {
-    pub fn new(symbol_table: &'a mut SymbolTable) -> Self {
+    pub fn new(
+        symbol_table: &'a mut SymbolTable,
+        constant: &'a mut Vec<object::ObjectType>,
+    ) -> Self {
         Self {
             instruction: Instruction(Vec::new()),
-            constant: Vec::new(),
+            constant,
             last_instruction: EmitterInstruction::new(),
             previous_instruction: EmitterInstruction::new(),
             symbol_table,
